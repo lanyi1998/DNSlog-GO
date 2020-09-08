@@ -53,14 +53,6 @@ func verifyToken(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func verifyHeadToken(token string) bool {
-	if token == Core.Config.HTTP.Token {
-		return true
-	} else {
-		return false
-	}
-}
-
 func JsonRespData(resp RespData) string {
 	rs, err := json.Marshal(resp)
 	if err != nil {
@@ -77,6 +69,35 @@ func Clean(w http.ResponseWriter, r *http.Request) {
 			HTTPStatusCode: "200",
 			Msg:            "success",
 		}))
+	} else {
+		fmt.Fprintf(w, JsonRespData(RespData{
+			HTTPStatusCode: "403",
+			Msg:            "false",
+		}))
+	}
+}
+
+func verifyDns(w http.ResponseWriter, r *http.Request) {
+	type queryInfo struct {
+		Query string // 首字母大写
+	}
+	var Q queryInfo
+	key := r.Header.Get("token")
+	if key == Core.Config.HTTP.Token {
+		body, _ := ioutil.ReadAll(r.Body)
+		json.Unmarshal(body, &Q)
+		resp := RespData{
+			HTTPStatusCode: "200",
+			Msg:            "false",
+		}
+		for _, v := range Dns.DnsData {
+			if v.Subdomain == Q.Query {
+				resp.Msg = "true"
+				break
+			}
+
+		}
+		fmt.Fprintf(w, JsonRespData(resp))
 	} else {
 		fmt.Fprintf(w, JsonRespData(RespData{
 			HTTPStatusCode: "403",

@@ -4,6 +4,9 @@ DNSLog-GO 是一款golang编写的监控 DNS 解析记录的工具，自带WEB�
 
 安装
 ---
+
+详细图文教程:https://mp.weixin.qq.com/s/m_UXJa0imfOi721bkBpwFg
+
 1.获取发行版
     这里 https://github.com/lanyi1998/DNSlog-GO/releases 下载最新发行版,并解压
     
@@ -26,8 +29,10 @@ DNSLog-GO 是一款golang编写的监控 DNS 解析记录的工具，自带WEB�
 3.修改配置文件 config.ini
 
     Port = 8080 //HTTP监听端口
-    
     Token = admin //API token
+    ConsoleDisable = false //禁用web控制台，设置为true以后无法访问web页面，只能通过API获取数据
+    Domain = a.com //绑定自己的域名,避免无效域名和其他网络扫描
+    
 
 4.启动服务
     VPS上，root运行 ./main,即可启动DNS和HTTP监听

@@ -1,11 +1,13 @@
 package Dns
 
 import (
+	"../Core"
 	"encoding/json"
 	"fmt"
 	"golang.org/x/net/dns/dnsmessage"
 	"net"
 	"os"
+	"strings"
 	"sync"
 	"time"
 )
@@ -26,7 +28,7 @@ var D DnsInfo
 func ListingDnsServer() {
 	conn, err := net.ListenUDP("udp", &net.UDPAddr{Port: 53})
 	if err != nil {
-		println("DNS port listing error")
+		println("DNS port listing error,Please run as root")
 		os.Exit(0)
 	}
 	defer conn.Close()
@@ -54,11 +56,15 @@ func serverDNS(addr *net.UDPAddr, conn *net.UDPConn, msg dnsmessage.Message) {
 		queryType    = question.Type
 		queryName, _ = dnsmessage.NewName(queryNameStr)
 	)
-	D.Set(DnsInfo{
-		Subdomain: queryNameStr,
-		Ipaddress: addr.IP.String(),
-		Time:      time.Now().Unix() ,
-	})
+	if strings.Contains(queryNameStr, Core.Config.Dns.Domain) {
+		D.Set(DnsInfo{
+			Subdomain: queryNameStr[:len(queryNameStr)-1],
+			Ipaddress: addr.IP.String(),
+			Time:      time.Now().Unix(),
+		})
+	}else{
+		return
+	}
 	var resource dnsmessage.Resource
 	switch queryType {
 	case dnsmessage.TypeA:
