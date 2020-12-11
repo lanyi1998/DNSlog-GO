@@ -1,9 +1,9 @@
 package main
 
 import (
-	"./Core"
-	"./Http"
-	"./Dns"
+	"DnsLog/Core"
+	"DnsLog/Dns"
+	"DnsLog/Http"
 	"gopkg.in/gcfg.v1"
 )
 

@@ -1,7 +1,7 @@
 package Http
 
 import (
-	"../Core"
+	"DnsLog/Core"
 	"log"
 	"net/http"
 )

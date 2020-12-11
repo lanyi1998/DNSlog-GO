@@ -1,7 +1,7 @@
 package Dns
 
 import (
-	"../Core"
+	"DnsLog/Core"
 	"encoding/json"
 	"fmt"
 	"golang.org/x/net/dns/dnsmessage"
@@ -56,6 +56,7 @@ func serverDNS(addr *net.UDPAddr, conn *net.UDPConn, msg dnsmessage.Message) {
 		queryType    = question.Type
 		queryName, _ = dnsmessage.NewName(queryNameStr)
 	)
+	//域名过滤，避免网络扫描
 	if strings.Contains(queryNameStr, Core.Config.Dns.Domain) {
 		D.Set(DnsInfo{
 			Subdomain: queryNameStr[:len(queryNameStr)-1],

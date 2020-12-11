@@ -92,7 +92,7 @@
                     res => {
                         if (res['data']['HTTPStatusCode'] == 200) {
                             if (res['data']['Msg'] != 'null') {
-                                this.DnsData = JSON.parse(res['data']['Msg'])
+                                this.DnsData = JSON.parse(res['data']['Msg']).reverse()
                                 for (var i = 0; i < this.DnsData.length; i++) {
                                     this.DnsData[i].Time = formatTimeToStr(this.DnsData[i].Time)
                                 }

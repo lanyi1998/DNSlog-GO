@@ -1,8 +1,8 @@
 package Http
 
 import (
-	"../Core"
-	"../Dns"
+	"DnsLog/Core"
+	"DnsLog/Dns"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
