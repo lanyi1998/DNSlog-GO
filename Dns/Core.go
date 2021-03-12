@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"golang.org/x/net/dns/dnsmessage"
+	"log"
 	"net"
 	"os"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -26,13 +28,15 @@ var D DnsInfo
 
 //监听dns端口
 func ListingDnsServer() {
+	if runtime.GOOS != "windows" && os.Geteuid() != 0 {
+		log.Fatal("Please run as root")
+	}
 	conn, err := net.ListenUDP("udp", &net.UDPAddr{Port: 53})
 	if err != nil {
-		println("DNS port listing error,Please run as root")
-		os.Exit(0)
+		log.Fatal(err.Error())
 	}
 	defer conn.Close()
-	fmt.Println("DNS Listing Start...")
+	log.Println("DNS Listing Start...")
 	for {
 		buf := make([]byte, 512)
 		_, addr, _ := conn.ReadFromUDP(buf)
@@ -63,7 +67,7 @@ func serverDNS(addr *net.UDPAddr, conn *net.UDPConn, msg dnsmessage.Message) {
 			Ipaddress: addr.IP.String(),
 			Time:      time.Now().Unix(),
 		})
-	}else{
+	} else {
 		return
 	}
 	var resource dnsmessage.Resource
