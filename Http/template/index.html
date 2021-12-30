@@ -6,7 +6,6 @@
     <meta name="keywords" content="dnslog"/>
     <meta name="description" content="dnslog"/>
     <script src="vue.js"></script>
-    <!--    <script src="https://cn.vuejs.org/js/vue.js"></script>-->
     <script src="axios.min.js"></script>
 </head>
 <body>
@@ -19,7 +18,7 @@
     <button type="button" v-on:click="GenPayload">复制随机子域名</button>
     <button type="button" v-on:click="Clean">清空</button>
     <br><br>
-    <div id="myDomain">&nbsp;</div>
+    <div id="myDomain">{{ randDomain }}</div>
     <br>
     <center>
         <table id="myRecords" width=700 border="0" cellpadding="5" cellspacing="1" bgcolor="#EFF3FF"
@@ -83,6 +82,7 @@
             DnsData: "",
             Token: "",
             domain: "",
+            randDomain: "",
         },
         methods: {
             GetDomain: function () {
@@ -94,10 +94,15 @@
                     res => {
                         if (res['data']['HTTPStatusCode'] == 200) {
                             if (res['data']['Msg'] != 'null') {
-                                this.DnsData = JSON.parse(res['data']['Msg']).reverse()
-                                for (var i = 0; i < this.DnsData.length; i++) {
-                                    this.DnsData[i].Time = formatTimeToStr(this.DnsData[i].Time)
+                                let DnsData = JSON.parse(res['data']['Msg']).reverse();
+                                let DnsDatas = new Array();
+                                for (var i = 0; i < DnsData.length; i++) {
+                                    if (DnsData[i].Subdomain.indexOf(this.Token) !== -1) {
+                                        DnsData[i].Time = formatTimeToStr(DnsData[i].Time)
+                                        DnsDatas.push(DnsData[i])
+                                    }
                                 }
+                                this.DnsData = DnsDatas
                             } else {
                                 this.DnsData = ""
                             }
@@ -133,6 +138,7 @@
                 document.execCommand("Copy"); // 执行浏览器复制命令
                 let creatDom = document.getElementById("creatDom");
                 creatDom.parentNode.removeChild(creatDom);
+                app.randDomain = randDomain
                 alert("复制成功");
             }
         },

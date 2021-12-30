@@ -7,8 +7,6 @@ import (
 	"net/http"
 )
 
-var DnsData = make(map[string]string)
-
 //go:embed template
 var template embed.FS
 
@@ -18,7 +16,7 @@ func ListingHttpManagementServer() {
 		mux.Handle("/template/", http.FileServer(http.FS(template)))
 		mux.HandleFunc("/", index)
 	}
-	mux.HandleFunc("/api/verifyToken", verifyToken)
+	mux.HandleFunc("/api/verifyToken", verifyTokenApi)
 	mux.HandleFunc("/api/getDnsData", GetDnsData)
 	mux.HandleFunc("/api/Clean", Clean)
 	mux.HandleFunc("/api/verifyDns", verifyDns)

@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 )
 
 type RespData struct {
@@ -15,7 +16,9 @@ type RespData struct {
 	Msg            string
 }
 
-var resp RespData
+type queryInfo struct {
+	Query string // 首字母大写
+}
 
 func index(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/template", http.StatusMovedPermanently)
@@ -23,10 +26,10 @@ func index(w http.ResponseWriter, r *http.Request) {
 
 func GetDnsData(w http.ResponseWriter, r *http.Request) {
 	key := r.Header.Get("token")
-	if key == Core.Config.HTTP.Token {
+	if verifyToken(key) {
 		fmt.Fprintf(w, JsonRespData(RespData{
 			HTTPStatusCode: "200",
-			Msg:            Dns.D.Get(),
+			Msg:            Dns.D.Get(key),
 		}))
 	} else {
 		fmt.Fprintf(w, JsonRespData(RespData{
@@ -36,14 +39,14 @@ func GetDnsData(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func verifyToken(w http.ResponseWriter, r *http.Request) {
+func verifyTokenApi(w http.ResponseWriter, r *http.Request) {
 	var data map[string]string
 	token, _ := ioutil.ReadAll(r.Body)
 	json.Unmarshal(token, &data)
-	if data["token"] == Core.Config.HTTP.Token {
+	if verifyToken(data["token"]) {
 		fmt.Fprintf(w, JsonRespData(RespData{
 			HTTPStatusCode: "200",
-			Msg:            Core.Config.Dns.Domain,
+			Msg:            data["token"] + "." + Core.Config.Dns.Domain,
 		}))
 	} else {
 		fmt.Fprintf(w, JsonRespData(RespData{
@@ -63,8 +66,8 @@ func JsonRespData(resp RespData) string {
 
 func Clean(w http.ResponseWriter, r *http.Request) {
 	key := r.Header.Get("token")
-	if key == Core.Config.HTTP.Token {
-		Dns.D.Clear()
+	if verifyToken(key) {
+		Dns.D.Clear(key)
 		fmt.Fprintf(w, JsonRespData(RespData{
 			HTTPStatusCode: "200",
 			Msg:            "success",
@@ -77,20 +80,28 @@ func Clean(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func verifyDns(w http.ResponseWriter, r *http.Request) {
-	type queryInfo struct {
-		Query string // 首字母大写
+func verifyToken(token string) bool {
+	tokens := strings.Split(Core.Config.HTTP.Token, ",")
+	flag := false
+	for _, v := range tokens {
+		if v == token {
+			flag = true
+		}
 	}
+	return flag
+}
+
+func verifyDns(w http.ResponseWriter, r *http.Request) {
 	var Q queryInfo
 	key := r.Header.Get("token")
-	if key == Core.Config.HTTP.Token {
+	if verifyToken(key) {
 		body, _ := ioutil.ReadAll(r.Body)
 		json.Unmarshal(body, &Q)
 		resp := RespData{
 			HTTPStatusCode: "200",
 			Msg:            "false",
 		}
-		for _, v := range Dns.DnsData {
+		for _, v := range Dns.DnsData[key] {
 			if v.Subdomain == Q.Query {
 				resp.Msg = "true"
 				break
