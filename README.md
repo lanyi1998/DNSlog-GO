@@ -2,16 +2,20 @@
 ---
 DNSLog-GO 是一款golang编写的监控 DNS 解析记录的工具，自带多用户WEB界面
 
+演示截图:
+
+![avatar](https://github.com/lanyi1998/DNSlog-GO/raw/master/images/demo.png)
+
 安装
 ---
 
 详细图文教程:https://mp.weixin.qq.com/s/m_UXJa0imfOi721bkBpwFg
 
-1.获取发行版
+# 1.获取发行版
 
 这里 https://github.com/lanyi1998/DNSlog-GO/releases 下载最新发行版,并解压
 
-2.域名与公网 IP 准备
+# 2.域名与公网 IP 准备
 
 ```
 搭建并使用 DNSLog，你需要拥有两个域名，一个域名作为 NS 服务器域名(例:a.com)，一个用于记录域名(例: b.com)。还需要有一个公网 IP 地址(如：1.1.1.1)
@@ -29,7 +33,7 @@ ns2.a.com  A 记录指向  1.1.1.1
 注意: NS 记录修改之后部分地区需要 24-48 小时会生效
 ```
 
-3.修改配置文件 config.ini
+# 3.修改配置文件 config.ini
 
 ```
 [HTTP]
@@ -41,7 +45,11 @@ ConsoleDisable = false //是否关闭web页面
 Domain = demo.com //dnslog的域名
 ```
 
-4.API Python Demo
+# 4.启动对应系统的客户端，注意服务端重启以后，必须清空一下浏览器中的localStorage,否则会获取不到数据
+
+---
+
+API Python Demo
 
 ```python
 import requests
@@ -54,13 +62,13 @@ class DnsLog():
     token = ""
     Webserver = ""
 
-    def __init__(self, domain, Webserver, token):
-        self.domain = domain  # dnslog的根域名
+    def __init__(self, Webserver, token):
         self.Webserver = Webserver  # dnslog的http监听地址，格式为 ip:端口
         self.token = token  # token
         # 检测DNSLog服务器是否正常
         try:
             res = requests.post("http://" + Webserver + "/api/verifyToken", json={"token": token}).json()
+            self.domain = res.Msg
         except:
             exit("DnsLog 服务器连接失败")
         if res["Msg"] == "false":
@@ -68,7 +76,7 @@ class DnsLog():
 
     # 生成随机子域名
     def randomSubDomain(self, length=5):
-        subDomain = ''.join(random.sample('zyxwvutsrqponmlkjihgfedcba', length)) + "." + self.token + '.' + self.domain
+        subDomain = ''.join(random.sample('zyxwvutsrqponmlkjihgfedcba', length)) + '.' + self.domain
         return subDomain
 
     # 验证子域名是否存在
@@ -83,7 +91,7 @@ class DnsLog():
 
 url = "http://192.168.41.2:8090/"
 
-dns = DnsLog("test.com", "1111:8888", "admin")
+dns = DnsLog("1111:8888", "admin")
 
 subDomain = dns.randomSubDomain()
 
@@ -99,9 +107,3 @@ requests.post(url, json=payload)
 if dns.checkDomain(subDomain):
     print("存在FastJosn")
 ```
-
-4.启动服务 VPS上，root运行 ./main,即可启动DNS和HTTP监听
-
-演示截图:
-
-![avatar](https://github.com/lanyi1998/DNSlog-GO/raw/master/images/demo.png)

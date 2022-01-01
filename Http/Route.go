@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strings"
 )
 
 type RespData struct {
@@ -26,7 +25,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 
 func GetDnsData(w http.ResponseWriter, r *http.Request) {
 	key := r.Header.Get("token")
-	if verifyToken(key) {
+	if Core.VerifyToken(key) {
 		fmt.Fprintf(w, JsonRespData(RespData{
 			HTTPStatusCode: "200",
 			Msg:            Dns.D.Get(key),
@@ -43,10 +42,10 @@ func verifyTokenApi(w http.ResponseWriter, r *http.Request) {
 	var data map[string]string
 	token, _ := ioutil.ReadAll(r.Body)
 	json.Unmarshal(token, &data)
-	if verifyToken(data["token"]) {
+	if Core.VerifyToken(data["token"]) {
 		fmt.Fprintf(w, JsonRespData(RespData{
 			HTTPStatusCode: "200",
-			Msg:            data["token"] + "." + Core.Config.Dns.Domain,
+			Msg:            Core.User[data["token"]] + "." + Core.Config.Dns.Domain,
 		}))
 	} else {
 		fmt.Fprintf(w, JsonRespData(RespData{
@@ -66,7 +65,7 @@ func JsonRespData(resp RespData) string {
 
 func Clean(w http.ResponseWriter, r *http.Request) {
 	key := r.Header.Get("token")
-	if verifyToken(key) {
+	if Core.VerifyToken(key) {
 		Dns.D.Clear(key)
 		fmt.Fprintf(w, JsonRespData(RespData{
 			HTTPStatusCode: "200",
@@ -80,21 +79,10 @@ func Clean(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func verifyToken(token string) bool {
-	tokens := strings.Split(Core.Config.HTTP.Token, ",")
-	flag := false
-	for _, v := range tokens {
-		if v == token {
-			flag = true
-		}
-	}
-	return flag
-}
-
 func verifyDns(w http.ResponseWriter, r *http.Request) {
 	var Q queryInfo
 	key := r.Header.Get("token")
-	if verifyToken(key) {
+	if Core.VerifyToken(key) {
 		body, _ := ioutil.ReadAll(r.Body)
 		json.Unmarshal(body, &Q)
 		resp := RespData{

@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-var DnsData map[string][]DnsInfo
+var DnsData = make(map[string][]DnsInfo)
 
 var rw sync.RWMutex
 
@@ -55,29 +55,20 @@ func serverDNS(addr *net.UDPAddr, conn *net.UDPConn, msg dnsmessage.Message) {
 	}
 	question := msg.Questions[0]
 	var (
-		//queryTypeStr = question.Type.String()
 		queryNameStr = question.Name.String()
 		queryType    = question.Type
 		queryName, _ = dnsmessage.NewName(queryNameStr)
 		resource     dnsmessage.Resource
+		queryDoamin  = strings.Split(strings.Replace(queryNameStr, fmt.Sprintf(".%s.", Core.Config.Dns.Domain), "", 1), ".")
 	)
 	//域名过滤，少于5位的不存储，避免网络扫描的垃圾数据
-	queryDoamin := strings.Split(strings.Replace(queryNameStr, fmt.Sprintf(".%s.", Core.Config.Dns.Domain), "", 1), ".")
 	if strings.Contains(queryNameStr, Core.Config.Dns.Domain) {
-		if verifyToken(queryDoamin[len(queryDoamin)-1]) {
-			D.Set(queryDoamin[len(queryDoamin)-1], DnsInfo{
-				Subdomain: queryNameStr[:len(queryNameStr)-1],
-				Ipaddress: addr.IP.String(),
-				Time:      time.Now().Unix(),
-			})
-		} else {
-			D.Set("other", DnsInfo{
-				Subdomain: queryNameStr[:len(queryNameStr)-1],
-				Ipaddress: addr.IP.String(),
-				Time:      time.Now().Unix(),
-			})
-		}
-
+		user := Core.GetUser(queryDoamin[len(queryDoamin)-1])
+		D.Set(user, DnsInfo{
+			Subdomain: queryNameStr[:len(queryNameStr)-1],
+			Ipaddress: addr.IP.String(),
+			Time:      time.Now().Unix(),
+		})
 	}
 	switch queryType {
 	case dnsmessage.TypeA:
@@ -132,8 +123,9 @@ func (d *DnsInfo) Get(token string) string {
 	if DnsData[token] != nil {
 		v, _ := json.Marshal(DnsData[token])
 		res = string(v)
-	} else {
-		res = "error"
+	}
+	if res == "" {
+		res = "null"
 	}
 	rw.RUnlock()
 	return res
@@ -142,15 +134,4 @@ func (d *DnsInfo) Get(token string) string {
 func (d *DnsInfo) Clear(token string) {
 	DnsData[token] = []DnsInfo{}
 	DnsData["other"] = []DnsInfo{}
-}
-
-func verifyToken(token string) bool {
-	tokens := strings.Split(Core.Config.HTTP.Token, ",")
-	flag := false
-	for _, v := range tokens {
-		if v == token {
-			flag = true
-		}
-	}
-	return flag
 }
