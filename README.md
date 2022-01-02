@@ -107,3 +107,8 @@ requests.post(url, json=payload)
 if dns.checkDomain(subDomain):
     print("存在FastJosn")
 ```
+
+
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/lanyi1998/DNSlog-GO.svg)](https://starchart.cc/lanyi1998/DNSlog-GO)
