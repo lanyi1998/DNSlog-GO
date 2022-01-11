@@ -11,6 +11,10 @@ DNSLog-GO 是一款golang编写的监控 DNS 解析记录的工具，自带多�
 
 详细图文教程:https://mp.weixin.qq.com/s/m_UXJa0imfOi721bkBpwFg
 
+**个人单独使用推荐使用1.4版本 https://github.com/lanyi1998/DNSlog-GO/releases/tag/1.4**
+
+**团队使用推荐使用 最新版**
+
 # 1.获取发行版
 
 这里 https://github.com/lanyi1998/DNSlog-GO/releases 下载最新发行版,并解压
