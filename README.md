@@ -112,7 +112,12 @@ if dns.checkDomain(subDomain):
     print("存在FastJosn")
 ```
 
-
 ## Stargazers over time
 
 [![Stargazers over time](https://starchart.cc/lanyi1998/DNSlog-GO.svg)](https://starchart.cc/lanyi1998/DNSlog-GO)
+
+## 404星链计划
+
+<img src lazysrc="https://github.com/knownsec/404StarLink-Project/raw/master/logo.png" width="30%">
+
+DNSlog-Go 现已加入 [404星链计划](https://github.com/knownsec/404StarLink)
