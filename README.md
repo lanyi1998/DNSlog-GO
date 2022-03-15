@@ -118,6 +118,6 @@ if dns.checkDomain(subDomain):
 
 ## 404星链计划
 
-<img src lazysrc="https://github.com/knownsec/404StarLink-Project/raw/master/logo.png" width="30%">
+[![Stargazers over time](https://github.com/knownsec/404StarLink-Project/raw/master/logo.png)](https://starchart.cc/lanyi1998/DNSlog-GO)
 
 DNSlog-Go 现已加入 [404星链计划](https://github.com/knownsec/404StarLink)
