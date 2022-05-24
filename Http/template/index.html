@@ -2,22 +2,24 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>DNSLog</title>
+    <title>DNSLog Platform</title>
     <meta name="keywords" content="dnslog"/>
     <meta name="description" content="dnslog"/>
+    <meta name="keywords" content="dnslog，dnslog平台">
+    <meta name="description" content="DNSLog平台">
     <script src="vue.js"></script>
     <script src="axios.min.js"></script>
 </head>
 <body>
-<div id=header style="text-align:center">
-    <hr style=" height:2px;border:none;border-top:2px dashed #87CEFA;"/>
-    <br>
+<div id="header" style="text-align:center">
+<a href=""><img src="banner.png" width="400" height="150"></a>
+<hr style=" height:2px;border:none;border-top:2px dashed #87CEFA;"><br>
 </div>
 <div style="text-align:center;" id="app">
-    <button type="button" v-on:click="GetDomain">刷新记录</button>
-    <button type="button" v-on:click="GenPayload">复制随机子域名</button>
-    <button type="button" v-on:click="Clean">清空</button>
-    <br><br>
+    <button type="button" v-on:click="GenPayload">Get SubDomain</button>
+    <button type="button" v-on:click="GetDomain">Refresh Record</button>
+    <button type="button" v-on:click="Clean">Flush</button>
+    <br><br><br>
     <div id="myDomain">{{ randDomain }}</div>
     <template v-if="randDomain !== ''" v-for="(item,key) in payload">
         <div>{{key}}: <code>{{item.replace("domain",randDomain)}}</code></div>
@@ -47,10 +49,9 @@
 <br>
 <br>
 <br>
-<div id=footer>
-    <hr style=" height:2px;border:none;border-top:2px dashed #87CEFA;"/>
-    <br>
-    <center><span style="color:#ADD3EF">DNSLog</span></center>
+<div id="footer">
+<hr style=" height:2px;border:none;border-top:2px dashed #87CEFA;"><br>
+<center><span style="color:#ADD3EF">Copyright © 2022 DNSLog.cn All Rights Reserved.</span></center>
 </div>
 <script>
     function formatTimeToStr(date) {
