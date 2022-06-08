@@ -11,10 +11,6 @@ DNSLog-GO 是一款golang编写的监控 DNS 解析记录的工具，自带多�
 
 详细图文教程:https://mp.weixin.qq.com/s/m_UXJa0imfOi721bkBpwFg
 
-**个人单独使用推荐使用1.4版本 https://github.com/lanyi1998/DNSlog-GO/releases/tag/1.4**
-
-**团队使用推荐使用 最新版**
-
 # 1.获取发行版
 
 这里 https://github.com/lanyi1998/DNSlog-GO/releases 下载最新发行版,并解压
@@ -41,16 +37,18 @@ ns1.1.1.1.1.nip.io
 # 3.修改配置文件 config.ini
 
 ```
-[HTTP]
-Port = 8080  //http web监听端口
-Token = admin1,admin2 //多个用户token，用,分割。可以团队成员一起使用了
-ConsoleDisable = false //是否关闭web页面
-    
-[DNS]
-Domain = demo.com //dnslog的域名
+HTTP:
+  port: 8000 //http web监听端口
+  #{"token":"用户对应子域名"}
+  user: { "admin": "admin" } //用户admin 对应的dnslog子域名是 admin.demo.com
+  consoleDisable: false  //是否关闭web页面
+Dns:
+  domain: demo.com //dnslog域名
 ```
 
-# 4.启动对应系统的客户端，注意服务端重启以后，必须清空一下浏览器中的localStorage,否则会获取不到数据
+# 4.启动对应系统的客户端
+
+**注意服务端重启以后，如果修改了用户对应子域名，必须清空一下浏览器中的localStorage,否则会获取不到数据**
 
 ---
 
