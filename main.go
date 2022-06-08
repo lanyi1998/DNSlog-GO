@@ -4,21 +4,26 @@ import (
 	"DnsLog/Core"
 	"DnsLog/Dns"
 	"DnsLog/Http"
-	"gopkg.in/gcfg.v1"
+	"github.com/gogf/gf/encoding/gyaml"
+	"io/ioutil"
 	"log"
-	"strings"
 )
 
 //GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-w -s" main.go
 
 func main() {
-	var err = gcfg.ReadFileInto(&Core.Config, "./config.ini")
+	//var err = gcfg.ReadFileInto(&Core.Config, "./config.ini")
+	var ConfigBody, err = ioutil.ReadFile("./config.yaml")
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
-	for _, v := range strings.Split(Core.Config.HTTP.Token, ",") {
-		Core.User[v] = Core.GetRandStr()
+	err = gyaml.DecodeTo(ConfigBody, &Core.Config)
+	if err != nil {
+		log.Fatalln(err.Error())
 	}
+	//for _, v := range strings.Split(Core.Config.HTTP.Token, ",") {
+	//	Core.User[v] = Core.GetRandStr()
+	//}
 	go Dns.ListingDnsServer()
 	Http.ListingHttpManagementServer()
 }

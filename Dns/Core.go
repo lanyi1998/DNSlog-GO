@@ -7,8 +7,6 @@ import (
 	"golang.org/x/net/dns/dnsmessage"
 	"log"
 	"net"
-	"os"
-	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -28,9 +26,9 @@ var D DnsInfo
 
 // ListingDnsServer 监听dns端口
 func ListingDnsServer() {
-	if runtime.GOOS != "windows" && os.Geteuid() != 0 {
-		log.Fatal("Please run as root")
-	}
+	//if runtime.GOOS != "windows" && os.Geteuid() != 0 {
+	//	log.Fatal("Please run as root")
+	//}
 	conn, err := net.ListenUDP("udp", &net.UDPAddr{Port: 53})
 	if err != nil {
 		log.Fatal(err.Error())
@@ -59,10 +57,11 @@ func serverDNS(addr *net.UDPAddr, conn *net.UDPConn, msg dnsmessage.Message) {
 		queryType    = question.Type
 		queryName, _ = dnsmessage.NewName(queryNameStr)
 		resource     dnsmessage.Resource
-		queryDoamin  = strings.Split(strings.Replace(queryNameStr, fmt.Sprintf(".%s.", Core.Config.Dns.Domain), "", 1), ".")
+		queryDoamin  = strings.Split(strings.Replace(queryNameStr, fmt.Sprintf(".%s.", Core.Config.DNS.Domain), "", 1), ".")
 	)
-	//域名过滤，少于5位的不存储，避免网络扫描的垃圾数据
-	if strings.Contains(queryNameStr, Core.Config.Dns.Domain) {
+
+	//域名过滤
+	if strings.Contains(queryNameStr, Core.Config.DNS.Domain) {
 		user := Core.GetUser(queryDoamin[len(queryDoamin)-1])
 		D.Set(user, DnsInfo{
 			Subdomain: queryNameStr[:len(queryNameStr)-1],

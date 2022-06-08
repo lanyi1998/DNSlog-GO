@@ -3,6 +3,7 @@ package Http
 import (
 	"DnsLog/Core"
 	"embed"
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -22,7 +23,7 @@ func ListingHttpManagementServer() {
 	mux.HandleFunc("/api/verifyDns", verifyDns)
 	log.Println("Http Listing Start...")
 	server := &http.Server{
-		Addr:    ":" + Core.Config.HTTP.Port,
+		Addr:    fmt.Sprintf(":%s", Core.Config.HTTP.Port),
 		Handler: mux,
 	}
 	log.Println("Http address: http://" + "0.0.0.0:" + Core.Config.HTTP.Port)

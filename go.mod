@@ -3,7 +3,8 @@ module DnsLog
 go 1.16
 
 require (
-	golang.org/x/net v0.0.0-20201031054903-ff519b6c9102
+	github.com/gogf/gf v1.16.9
+	golang.org/x/net v0.0.0-20210520170846-37e1c6afe023
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )

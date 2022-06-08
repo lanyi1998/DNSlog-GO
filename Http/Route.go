@@ -45,7 +45,7 @@ func verifyTokenApi(w http.ResponseWriter, r *http.Request) {
 	if Core.VerifyToken(data["token"]) {
 		fmt.Fprintf(w, JsonRespData(RespData{
 			HTTPStatusCode: "200",
-			Msg:            Core.User[data["token"]] + "." + Core.Config.Dns.Domain,
+			Msg:            Core.Config.HTTP.User[data["token"]] + "." + Core.Config.DNS.Domain,
 		}))
 	} else {
 		fmt.Fprintf(w, JsonRespData(RespData{
