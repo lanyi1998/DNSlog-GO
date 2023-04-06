@@ -15,6 +15,13 @@ DNSLog-GO 是一款golang编写的监控 DNS 解析记录的工具，自带多�
 
 这里 https://github.com/lanyi1998/DNSlog-GO/releases 下载最新发行版,并解压
 
+或者docker启动
+```shell
+wget https://raw.githubusercontent.com/lanyi1998/DNSlog-GO/master/config.yaml
+#修改你的config.yaml文件
+docker run -d -p 53:53 -p 53:53/udp -p 8000:8000 -v `pwd`/config.yaml:/DNSlog-GO/config.yaml --privileged lanyi1998/dnslog-go:latest
+```
+
 # 2.域名与公网 IP 准备
 
 ```
