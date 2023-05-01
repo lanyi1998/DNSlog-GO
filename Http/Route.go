@@ -127,7 +127,7 @@ func BulkVerifyDns(w http.ResponseWriter, r *http.Request) {
 		}
 		resp := BulkRespData{
 			HTTPStatusCode: "200",
-			Msg:            result,
+			Msg:            removeDuplication(result),
 		}
 		fmt.Fprintf(w, JsonRespData(resp))
 	} else {
@@ -136,4 +136,16 @@ func BulkVerifyDns(w http.ResponseWriter, r *http.Request) {
 			Msg:            "false",
 		}))
 	}
+}
+
+func removeDuplication(arr []string) []string {
+	j := 0
+	for i := 1; i < len(arr); i++ {
+		if arr[i] == arr[j] {
+			continue
+		}
+		j++
+		arr[j] = arr[i]
+	}
+	return arr[:j+1]
 }
