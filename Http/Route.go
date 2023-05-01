@@ -5,6 +5,7 @@ import (
 	"DnsLog/Dns"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -13,6 +14,11 @@ import (
 type RespData struct {
 	HTTPStatusCode string
 	Msg            string
+}
+
+type BulkRespData struct {
+	HTTPStatusCode string
+	Msg            []string
 }
 
 type queryInfo struct {
@@ -55,7 +61,7 @@ func verifyTokenApi(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func JsonRespData(resp RespData) string {
+func JsonRespData(resp interface{}) string {
 	rs, err := json.Marshal(resp)
 	if err != nil {
 		log.Fatalln(err)
@@ -83,7 +89,7 @@ func verifyDns(w http.ResponseWriter, r *http.Request) {
 	var Q queryInfo
 	key := r.Header.Get("token")
 	if Core.VerifyToken(key) {
-		body, _ := ioutil.ReadAll(r.Body)
+		body, _ := io.ReadAll(r.Body)
 		json.Unmarshal(body, &Q)
 		resp := RespData{
 			HTTPStatusCode: "200",
@@ -95,6 +101,33 @@ func verifyDns(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 
+		}
+		fmt.Fprintf(w, JsonRespData(resp))
+	} else {
+		fmt.Fprintf(w, JsonRespData(RespData{
+			HTTPStatusCode: "403",
+			Msg:            "false",
+		}))
+	}
+}
+
+func BulkVerifyDns(w http.ResponseWriter, r *http.Request) {
+	var Q []string
+	key := r.Header.Get("token")
+	if Core.VerifyToken(key) {
+		body, _ := io.ReadAll(r.Body)
+		json.Unmarshal(body, &Q)
+		var result = []string{}
+		for _, v := range Dns.DnsData[key] {
+			for _, q := range Q {
+				if v.Subdomain == q {
+					result = append(result, q)
+				}
+			}
+		}
+		resp := BulkRespData{
+			HTTPStatusCode: "200",
+			Msg:            result,
 		}
 		fmt.Fprintf(w, JsonRespData(resp))
 	} else {

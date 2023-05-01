@@ -21,9 +21,6 @@ func main() {
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
-	//for _, v := range strings.Split(Core.Config.HTTP.Token, ",") {
-	//	Core.User[v] = Core.GetRandStr()
-	//}
 	go Dns.ListingDnsServer()
 	Http.ListingHttpManagementServer()
 }

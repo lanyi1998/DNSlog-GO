@@ -21,6 +21,7 @@ func ListingHttpManagementServer() {
 	mux.HandleFunc("/api/getDnsData", GetDnsData)
 	mux.HandleFunc("/api/Clean", Clean)
 	mux.HandleFunc("/api/verifyDns", verifyDns)
+	mux.HandleFunc("/api/bulkVerifyDns", BulkVerifyDns)
 	log.Println("Http Listing Start...")
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%s", Core.Config.HTTP.Port),
