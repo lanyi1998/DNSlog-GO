@@ -14,7 +14,7 @@ import (
 
 var DnsData = make(map[string][]DnsInfo)
 
-var rw sync.RWMutex
+var DnsDataRwLock sync.RWMutex
 
 type DnsInfo struct {
 	Subdomain string
@@ -107,17 +107,18 @@ func NewAResource(query dnsmessage.Name, a [4]byte) dnsmessage.Resource {
 }
 
 func (d *DnsInfo) Set(token string, data DnsInfo) {
-	rw.Lock()
+	DnsDataRwLock.Lock()
+	defer DnsDataRwLock.Unlock()
 	if DnsData[token] == nil {
 		DnsData[token] = []DnsInfo{data}
 	} else {
 		DnsData[token] = append(DnsData[token], data)
 	}
-	rw.Unlock()
 }
 
 func (d *DnsInfo) Get(token string) string {
-	rw.RLock()
+	DnsDataRwLock.RLock()
+	defer DnsDataRwLock.RUnlock()
 	res := ""
 	if DnsData[token] != nil {
 		v, _ := json.Marshal(DnsData[token])
@@ -126,7 +127,6 @@ func (d *DnsInfo) Get(token string) string {
 	if res == "" {
 		res = "null"
 	}
-	rw.RUnlock()
 	return res
 }
 

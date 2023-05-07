@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -46,7 +45,7 @@ func GetDnsData(w http.ResponseWriter, r *http.Request) {
 
 func verifyTokenApi(w http.ResponseWriter, r *http.Request) {
 	var data map[string]string
-	token, _ := ioutil.ReadAll(r.Body)
+	token, _ := io.ReadAll(r.Body)
 	json.Unmarshal(token, &data)
 	if Core.VerifyToken(data["token"]) {
 		fmt.Fprintf(w, JsonRespData(RespData{
@@ -86,6 +85,8 @@ func Clean(w http.ResponseWriter, r *http.Request) {
 }
 
 func verifyDns(w http.ResponseWriter, r *http.Request) {
+	Dns.DnsDataRwLock.RLock()
+	defer Dns.DnsDataRwLock.RUnlock()
 	var Q queryInfo
 	key := r.Header.Get("token")
 	if Core.VerifyToken(key) {
@@ -112,6 +113,8 @@ func verifyDns(w http.ResponseWriter, r *http.Request) {
 }
 
 func BulkVerifyDns(w http.ResponseWriter, r *http.Request) {
+	Dns.DnsDataRwLock.RLock()
+	defer Dns.DnsDataRwLock.RUnlock()
 	var Q []string
 	key := r.Header.Get("token")
 	if Core.VerifyToken(key) {
