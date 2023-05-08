@@ -19,7 +19,7 @@ jobs:
           go-version: '1.16'
 
       - name: Build
-        run: ./build.sh
+        run: chmod u+x build.sh && ./build.sh
 
       - name: Create Release
         id: create_release
