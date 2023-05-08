@@ -21,7 +21,7 @@ type BulkRespData struct {
 }
 
 type queryInfo struct {
-	Query string // 首字母大写
+	Query string
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
