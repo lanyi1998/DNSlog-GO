@@ -23,7 +23,7 @@ jobs:
       - name: Build
         run: |
           chmod u+x build.sh
-          echo "tag=`git describe --tags --abbrev=0`" >> $GITHUB_ENV
+          echo "tag=`date +%Y%m%d`" >> $GITHUB_ENV
           ./build.sh
 
       # debug
