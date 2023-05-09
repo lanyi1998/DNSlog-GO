@@ -15,4 +15,4 @@ zip -j build/dnslog-linux.zip build/dnslog-linux config.yaml
 
 # Build binary for Windows
 env GOOS=windows GOARCH=amd64 go build -o build/dnslog-windows.exe
-zip -j build/dnslog-windows.zip build/dnslog-windows config.yaml
+zip -j build/dnslog-windows.zip build/dnslog-windows.exe config.yaml
