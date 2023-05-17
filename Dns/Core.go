@@ -17,6 +17,7 @@ var DnsData = make(map[string][]DnsInfo)
 var DnsDataRwLock sync.RWMutex
 
 type DnsInfo struct {
+	Type      string
 	Subdomain string
 	Ipaddress string
 	Time      int64
@@ -64,6 +65,7 @@ func serverDNS(addr *net.UDPAddr, conn *net.UDPConn, msg dnsmessage.Message) {
 	if strings.Contains(queryNameStr, Core.Config.DNS.Domain) {
 		user := Core.GetUser(queryDoamin[len(queryDoamin)-1])
 		D.Set(user, DnsInfo{
+			Type:      "DNS",
 			Subdomain: queryNameStr[:len(queryNameStr)-1],
 			Ipaddress: addr.IP.String(),
 			Time:      time.Now().Unix(),

