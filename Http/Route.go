@@ -32,12 +32,12 @@ func index(w http.ResponseWriter, r *http.Request) {
 func GetDnsData(w http.ResponseWriter, r *http.Request) {
 	key := r.Header.Get("token")
 	if Core.VerifyToken(key) {
-		fmt.Fprintf(w, JsonRespData(RespData{
+		fmt.Fprint(w, JsonRespData(RespData{
 			HTTPStatusCode: "200",
 			Msg:            Dns.D.Get(key),
 		}))
 	} else {
-		fmt.Fprintf(w, JsonRespData(RespData{
+		fmt.Fprint(w, JsonRespData(RespData{
 			HTTPStatusCode: "403",
 			Msg:            "false",
 		}))
@@ -49,12 +49,12 @@ func verifyTokenApi(w http.ResponseWriter, r *http.Request) {
 	token, _ := io.ReadAll(r.Body)
 	json.Unmarshal(token, &data)
 	if Core.VerifyToken(data["token"]) {
-		fmt.Fprintf(w, JsonRespData(RespData{
+		fmt.Fprint(w, JsonRespData(RespData{
 			HTTPStatusCode: "200",
 			Msg:            Core.Config.HTTP.User[data["token"]] + "." + Core.Config.DNS.Domain,
 		}))
 	} else {
-		fmt.Fprintf(w, JsonRespData(RespData{
+		fmt.Fprint(w, JsonRespData(RespData{
 			HTTPStatusCode: "403",
 			Msg:            "false",
 		}))
@@ -73,12 +73,12 @@ func Clean(w http.ResponseWriter, r *http.Request) {
 	key := r.Header.Get("token")
 	if Core.VerifyToken(key) {
 		Dns.D.Clear(key)
-		fmt.Fprintf(w, JsonRespData(RespData{
+		fmt.Fprint(w, JsonRespData(RespData{
 			HTTPStatusCode: "200",
 			Msg:            "success",
 		}))
 	} else {
-		fmt.Fprintf(w, JsonRespData(RespData{
+		fmt.Fprint(w, JsonRespData(RespData{
 			HTTPStatusCode: "403",
 			Msg:            "false",
 		}))
@@ -104,9 +104,9 @@ func verifyDns(w http.ResponseWriter, r *http.Request) {
 			}
 
 		}
-		fmt.Fprintf(w, JsonRespData(resp))
+		fmt.Fprint(w, JsonRespData(resp))
 	} else {
-		fmt.Fprintf(w, JsonRespData(RespData{
+		fmt.Fprint(w, JsonRespData(RespData{
 			HTTPStatusCode: "403",
 			Msg:            "false",
 		}))
@@ -132,9 +132,9 @@ func verifyHttp(w http.ResponseWriter, r *http.Request) {
 			}
 
 		}
-		fmt.Fprintf(w, JsonRespData(resp))
+		fmt.Fprint(w, JsonRespData(resp))
 	} else {
-		fmt.Fprintf(w, JsonRespData(RespData{
+		fmt.Fprint(w, JsonRespData(RespData{
 			HTTPStatusCode: "403",
 			Msg:            "false",
 		}))
@@ -149,7 +149,7 @@ func BulkVerifyDns(w http.ResponseWriter, r *http.Request) {
 	if Core.VerifyToken(key) {
 		body, _ := io.ReadAll(r.Body)
 		json.Unmarshal(body, &Q)
-		var result = []string{}
+		var result []string
 		for _, v := range Dns.DnsData[key] {
 			for _, q := range Q {
 				if v.Subdomain == q {
@@ -161,9 +161,9 @@ func BulkVerifyDns(w http.ResponseWriter, r *http.Request) {
 			HTTPStatusCode: "200",
 			Msg:            removeDuplication(result),
 		}
-		fmt.Fprintf(w, JsonRespData(resp))
+		fmt.Fprint(w, JsonRespData(resp))
 	} else {
-		fmt.Fprintf(w, JsonRespData(RespData{
+		fmt.Fprint(w, JsonRespData(RespData{
 			HTTPStatusCode: "403",
 			Msg:            "false",
 		}))
@@ -178,7 +178,7 @@ func BulkVerifyHttp(w http.ResponseWriter, r *http.Request) {
 	if Core.VerifyToken(key) {
 		body, _ := io.ReadAll(r.Body)
 		json.Unmarshal(body, &Q)
-		var result = []string{}
+		var result []string
 		for _, v := range Dns.DnsData[key] {
 			for _, q := range Q {
 				if v.Subdomain == q && v.Type == "HTTP" {
@@ -190,9 +190,9 @@ func BulkVerifyHttp(w http.ResponseWriter, r *http.Request) {
 			HTTPStatusCode: "200",
 			Msg:            removeDuplication(result),
 		}
-		fmt.Fprintf(w, JsonRespData(resp))
+		fmt.Fprint(w, JsonRespData(resp))
 	} else {
-		fmt.Fprintf(w, JsonRespData(RespData{
+		fmt.Fprint(w, JsonRespData(RespData{
 			HTTPStatusCode: "403",
 			Msg:            "false",
 		}))
