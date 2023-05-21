@@ -1,7 +1,7 @@
 HTTP:
   port: 8000
   #{"token":"用户对应子域名"}
-  user: { "admin": "admin" }
+  user: { "admin": "dnslog" }
   consoleDisable: false
 Dns:
   domain: demo.com
