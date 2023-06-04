@@ -3,7 +3,9 @@ name: Build and Release
 on:
   push:
     branches:
-      - master
+      - 'master'
+    tags:
+      - '*'
 
 jobs:
   build:
@@ -23,7 +25,7 @@ jobs:
       - name: Build
         run: |
           chmod u+x build.sh
-          echo "tag=`date +%Y%m%d`" >> $GITHUB_ENV
+          echo "tag=${GITHUB_REF_NAME}" >> $GITHUB_ENV
           ./build.sh
 
       # debug

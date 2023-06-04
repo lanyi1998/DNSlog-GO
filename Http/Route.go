@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"time"
 )
@@ -216,6 +217,9 @@ func BulkVerifyHttp(w http.ResponseWriter, r *http.Request) {
 }
 
 func removeDuplication(arr []string) []string {
+	if arr == nil || len(arr) == 0 {
+		return []string{}
+	}
 	j := 0
 	for i := 1; i < len(arr); i++ {
 		if arr[i] == arr[j] {
@@ -227,12 +231,21 @@ func removeDuplication(arr []string) []string {
 	return arr[:j+1]
 }
 
+func isIpaddress(ip string) bool {
+	return net.ParseIP(ip) != nil
+}
+
 func HttpRequestLog(w http.ResponseWriter, r *http.Request) {
 	user := Core.GetUser(r.URL.Path)
+	clientIp := r.RemoteAddr
+	xip := r.Header.Get("X-Forwarded-For")
+	if xip != "" && isIpaddress(xip) {
+		clientIp = xip
+	}
 	Dns.D.Set(user, Dns.DnsInfo{
 		Type:      "HTTP",
 		Subdomain: r.URL.Path,
-		Ipaddress: r.RemoteAddr,
+		Ipaddress: clientIp,
 		Time:      time.Now().Unix(),
 	})
 }
