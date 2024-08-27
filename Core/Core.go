@@ -6,6 +6,7 @@ import (
 
 var Config = struct {
 	HTTP struct {
+		Host           string            `yaml:"host"`
 		Port           string            `yaml:"port"`
 		User           map[string]string `yaml:"user"`
 		ConsoleDisable bool              `yaml:"consoleDisable"`
