@@ -1,4 +1,5 @@
 HTTP:
+  host: 0.0.0.0
   port: 8000
   #{"token":"用户对应子域名"}
   user: { "admin": "dnslog" }

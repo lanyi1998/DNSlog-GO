@@ -29,10 +29,10 @@ func ListingHttpManagementServer() {
 
 	log.Println("Http Listing Start...")
 	server := &http.Server{
-		Addr:    ":" + Core.Config.HTTP.Port,
+		Addr:    Core.Config.HTTP.Host + ":" + Core.Config.HTTP.Port,
 		Handler: mux,
 	}
-	log.Println("Http address: http://" + "0.0.0.0:" + Core.Config.HTTP.Port)
+	log.Println("Http address: http://" + Core.Config.HTTP.Host + ":" + Core.Config.HTTP.Port)
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
