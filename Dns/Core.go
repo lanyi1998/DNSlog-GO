@@ -4,12 +4,13 @@ import (
 	"DnsLog/Core"
 	"encoding/json"
 	"fmt"
-	"golang.org/x/net/dns/dnsmessage"
 	"log"
 	"net"
 	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/net/dns/dnsmessage"
 )
 
 var DnsData = make(map[string][]DnsInfo)
@@ -54,7 +55,7 @@ func serverDNS(addr *net.UDPAddr, conn *net.UDPConn, msg dnsmessage.Message) {
 	}
 	question := msg.Questions[0]
 	var (
-		queryNameStr = question.Name.String()
+		queryNameStr = strings.ToLower(question.Name.String())
 		queryType    = question.Type
 		queryName, _ = dnsmessage.NewName(queryNameStr)
 		resource     dnsmessage.Resource
