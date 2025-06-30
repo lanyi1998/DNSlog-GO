@@ -13,8 +13,8 @@ import (
 	"time"
 )
 
-var DnsAMap = sync.Map{}
-var DnsTXTMap = sync.Map{}
+var DnsARecordMap = sync.Map{}
+var DnsTXTRecordMap = sync.Map{}
 
 // ListingDnsServer 监听dns端口
 func ListingDnsServer() {
@@ -63,8 +63,8 @@ func serverDNS(addr *net.UDPAddr, conn *net.UDPConn, msg dnsmessage.Message) {
 	switch queryType {
 	case dnsmessage.TypeA:
 		var DnsValue interface{}
-		DnsAMap.Range(func(key, value interface{}) bool {
-			if strings.Contains(queryName.String(), key.(string)) {
+		DnsARecordMap.Range(func(key, value interface{}) bool {
+			if strings.HasSuffix(queryNameStr, key.(string)) {
 				DnsValue = value.([4]byte)
 				return false
 			}
@@ -76,7 +76,37 @@ func serverDNS(addr *net.UDPAddr, conn *net.UDPConn, msg dnsmessage.Message) {
 			resource = NewAResource(queryName, [4]byte{127, 0, 0, 1})
 		}
 	case dnsmessage.TypeTXT:
-
+		var txtValue interface{}
+		DnsTXTRecordMap.Range(func(key, value interface{}) bool {
+			if strings.HasSuffix(queryNameStr, key.(string)) {
+				txtValue = value.(string)
+				return false
+			}
+			return true
+		})
+		if txtValue != nil {
+			resource = dnsmessage.Resource{
+				Header: dnsmessage.ResourceHeader{
+					Name:  queryName,
+					Class: dnsmessage.ClassINET,
+					TTL:   0,
+				},
+				Body: &dnsmessage.TXTResource{
+					TXT: []string{txtValue.(string)},
+				},
+			}
+		} else {
+			resource = dnsmessage.Resource{
+				Header: dnsmessage.ResourceHeader{
+					Name:  queryName,
+					Class: dnsmessage.ClassINET,
+					TTL:   0,
+				},
+				Body: &dnsmessage.TXTResource{
+					TXT: []string{""},
+				},
+			}
+		}
 	default:
 		resource = NewAResource(queryName, [4]byte{127, 0, 0, 1})
 	}

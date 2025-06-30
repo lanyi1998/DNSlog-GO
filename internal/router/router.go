@@ -40,6 +40,8 @@ func SetupRouter() *gin.Engine {
 	api.Any("/bulkVerifyDns", middleware.AuthMiddleware(), handler.BulkVerifyDns)
 	api.Any("/verifyHttp", middleware.AuthMiddleware(), handler.VerifyHttp)
 	api.Any("/bulkVerifyHttp", middleware.AuthMiddleware(), handler.BulkVerifyHttp)
+	api.Any("/setARecord", middleware.AuthMiddleware(), handler.SetARecord)
+	api.Any("/setTXTRecord", middleware.AuthMiddleware(), handler.SetTXTRecord)
 
 	r.NoRoute(handler.NoRoute)
 	return r
