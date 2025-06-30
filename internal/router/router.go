@@ -1,6 +1,7 @@
 package router
 
 import (
+	"DnsLog/internal/config"
 	"DnsLog/internal/handler"
 	"DnsLog/internal/middleware"
 	"embed"
@@ -19,17 +20,16 @@ var jsFS embed.FS
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
 
-	tmpl := template.Must(template.New("").Delims("[[", "]]").ParseFS(tmplFS, "resources/template/*.html"))
-	r.SetHTMLTemplate(tmpl)
-
-	// 修改静态文件服务配置，使用子文件系统
-	jsFiles, _ := fs.Sub(jsFS, "resources/js")
-	r.StaticFS("/js", http.FS(jsFiles))
-	r.GET("/", func(c *gin.Context) {
-		c.HTML(200, "index.html", gin.H{
-			"title": "首页",
+	if !config.Config.HTTP.ConsoleDisable {
+		tmpl := template.Must(template.New("").Delims("[[", "]]").ParseFS(tmplFS, "resources/template/*.html"))
+		r.SetHTMLTemplate(tmpl)
+		// 修改静态文件服务配置，使用子文件系统
+		jsFiles, _ := fs.Sub(jsFS, "resources/js")
+		r.StaticFS("/js", http.FS(jsFiles))
+		r.GET("/", func(c *gin.Context) {
+			c.HTML(200, "index.html", gin.H{})
 		})
-	})
+	}
 
 	api := r.Group("/api")
 	api.Any("/verifyToken", handler.VerifyToken)
