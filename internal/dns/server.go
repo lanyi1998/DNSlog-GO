@@ -1,48 +1,35 @@
-package Dns
+package dns
 
 import (
-	"DnsLog/Core"
-	"encoding/json"
+	"DnsLog/internal/config"
+	"DnsLog/internal/logger"
+	"DnsLog/internal/model"
 	"fmt"
-	"log"
+	"go.uber.org/zap"
+	"golang.org/x/net/dns/dnsmessage"
 	"net"
 	"strings"
 	"sync"
 	"time"
-
-	"golang.org/x/net/dns/dnsmessage"
 )
 
-var DnsData = make(map[string][]DnsInfo)
-
-var DnsDataRwLock sync.RWMutex
-
-type DnsInfo struct {
-	Type      string
-	Subdomain string
-	Ipaddress string
-	Time      int64
-}
-
-var D DnsInfo
+var DnsAMap = sync.Map{}
+var DnsTXTMap = sync.Map{}
 
 // ListingDnsServer 监听dns端口
 func ListingDnsServer() {
-	//if runtime.GOOS != "windows" && os.Geteuid() != 0 {
-	//	log.Fatal("Please run as root")
-	//}
 	conn, err := net.ListenUDP("udp", &net.UDPAddr{Port: 53})
 	if err != nil {
-		log.Fatal(err.Error())
+		logger.Logger.Error("Dns port Listen error", zap.Error(err))
 	}
 	defer conn.Close()
-	log.Println("DNS Listing Start...")
+	logger.Logger.Info("DNS Listing start success...")
 	for {
 		buf := make([]byte, 512)
 		_, addr, _ := conn.ReadFromUDP(buf)
 		var msg dnsmessage.Message
 		if err := msg.Unpack(buf); err != nil {
-			fmt.Println(err)
+			logger.Logger.Error("DNS unpack error", zap.Error(err))
 			continue
 		}
 		go serverDNS(addr, conn, msg)
@@ -59,40 +46,55 @@ func serverDNS(addr *net.UDPAddr, conn *net.UDPConn, msg dnsmessage.Message) {
 		queryType    = question.Type
 		queryName, _ = dnsmessage.NewName(queryNameStr)
 		resource     dnsmessage.Resource
-		queryDoamin  = strings.Split(strings.Replace(queryNameStr, fmt.Sprintf(".%s.", Core.Config.DNS.Domain), "", 1), ".")
+		queryDomain  = strings.Split(strings.Replace(queryNameStr, fmt.Sprintf(".%s.", config.Config.DNS.Domain), "", 1), ".")
 	)
 
-	//域名过滤
-	if strings.Contains(queryNameStr, Core.Config.DNS.Domain) {
-		user := Core.GetUser(queryDoamin[len(queryDoamin)-1])
-		D.Set(user, DnsInfo{
+	//过滤非绑定域名请求
+	if strings.Contains(queryNameStr, config.Config.DNS.Domain) {
+		user := config.Config.GetUserByDomain(queryDomain[len(queryDomain)-1])
+		model.UserDnsDataMap.Set(user, model.DnsInfo{
 			Type:      "DNS",
 			Subdomain: queryNameStr[:len(queryNameStr)-1],
 			Ipaddress: addr.IP.String(),
 			Time:      time.Now().Unix(),
 		})
 	}
+
 	switch queryType {
 	case dnsmessage.TypeA:
-		resource = NewAResource(queryName, [4]byte{127, 0, 0, 1})
+		var DnsValue interface{}
+		DnsAMap.Range(func(key, value interface{}) bool {
+			if strings.Contains(queryName.String(), key.(string)) {
+				DnsValue = value.([4]byte)
+				return false
+			}
+			return true
+		})
+		if DnsValue != nil {
+			resource = NewAResource(queryName, DnsValue.([4]byte))
+		} else {
+			resource = NewAResource(queryName, [4]byte{127, 0, 0, 1})
+		}
+	case dnsmessage.TypeTXT:
+
 	default:
 		resource = NewAResource(queryName, [4]byte{127, 0, 0, 1})
 	}
+
 	// send response
 	msg.Response = true
 	msg.Answers = append(msg.Answers, resource)
 	Response(addr, conn, msg)
 }
 
-// Response return
 func Response(addr *net.UDPAddr, conn *net.UDPConn, msg dnsmessage.Message) {
 	packed, err := msg.Pack()
 	if err != nil {
-		fmt.Println(err)
+		logger.Logger.Error("DNS pack error", zap.Error(err))
 		return
 	}
 	if _, err := conn.WriteToUDP(packed, addr); err != nil {
-		fmt.Println(err)
+		logger.Logger.Error("DNS write error", zap.Error(err))
 	}
 }
 
@@ -107,33 +109,4 @@ func NewAResource(query dnsmessage.Name, a [4]byte) dnsmessage.Resource {
 			A: a,
 		},
 	}
-}
-
-func (d *DnsInfo) Set(token string, data DnsInfo) {
-	DnsDataRwLock.Lock()
-	defer DnsDataRwLock.Unlock()
-	if DnsData[token] == nil {
-		DnsData[token] = []DnsInfo{data}
-	} else {
-		DnsData[token] = append(DnsData[token], data)
-	}
-}
-
-func (d *DnsInfo) Get(token string) string {
-	DnsDataRwLock.RLock()
-	defer DnsDataRwLock.RUnlock()
-	res := ""
-	if DnsData[token] != nil {
-		v, _ := json.Marshal(DnsData[token])
-		res = string(v)
-	}
-	if res == "" {
-		res = "null"
-	}
-	return res
-}
-
-func (d *DnsInfo) Clear(token string) {
-	DnsData[token] = []DnsInfo{}
-	DnsData["other"] = []DnsInfo{}
 }

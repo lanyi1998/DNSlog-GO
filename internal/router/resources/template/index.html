@@ -5,8 +5,8 @@
     <title>DNSLog</title>
     <meta name="keywords" content="dnslog"/>
     <meta name="description" content="dnslog"/>
-    <script src="vue.js"></script>
-    <script src="axios.min.js"></script>
+    <script src="../js/vue.js"></script>
+    <script src="../js/axios.min.js"></script>
 </head>
 <body>
 <div id=header style="text-align:center">
@@ -20,7 +20,7 @@
     <br><br>
     <div id="myDomain">{{ randDomain }}</div>
     <template v-if="randDomain !== ''" v-for="(item,key) in payload">
-        <div>{{key}}: <code>{{item.replace("domain",randDomain)}}</code></div>
+        <div>{{key}}: <code>{{item.replace("domain", randDomain)}}</code></div>
     </template>
     <br>
     <center>
@@ -34,7 +34,7 @@
             </tr>
             <td v-if="DnsData == ''" colspan="3" align="center">No Data</td>
             <tr v-for="item in DnsData">
-                <td >{{ item.Subdomain }}</td>
+                <td>{{ item.Subdomain }}</td>
                 <td style="width: 80px">{{ item.Type }}</td>
                 <td style="width: 150px">{{ item.Ipaddress }}</td>
                 <td style="width: 150px">{{ item.Time }}</td>
@@ -111,33 +111,28 @@
                     }
                 }).then(
                     res => {
-                        if (res.data.msg == "error") {
+                        console.log(res.data);
+                        if (res.data.code !== 200) {
                             alert("token错误");
                             localStorage.clear();
                             location.reload()
                             return
                         }
-                        if (res['data']['HTTPStatusCode'] == 200) {
-                            if (res['data']['Msg'] != 'null') {
-                                let DnsData = JSON.parse(res['data']['Msg']).reverse();
-                                for (let i = 0; i < DnsData.length; i++) {
-                                    DnsData[i].Time = formatTimeToStr(DnsData[i].Time)
-                                }
-                                this.DnsData = DnsData
-                            } else {
-                                this.DnsData = ""
+                        console.log(res['data'])
+                        if (res['data']['data'].length > 0) {
+                            // let DnsData = JSON.parse(res['data']['data']).reverse();
+                            for (let i = 0; i < res['data']['data'].length; i++) {
+                                res['data']['data'][i].Time = formatTimeToStr(res['data']['data'][i].Time)
                             }
-                        }
-                        if (res['data']['HTTPStatusCode'] == 403) {
-                            alert("token错误");
-                            localStorage.clear();
-                            location.reload()
+                            this.DnsData = res['data']['data']
+                        } else {
+                            this.DnsData = ""
                         }
                     }
                 )
             },
             Clean: function () {
-                axios.get("/api/Clean", {
+                axios.get("/api/clean", {
                     headers: {
                         'token': this.Token
                     }
@@ -146,7 +141,6 @@
             },
             GenPayload: function () {
                 let randDomain = randomStr() + "." + this.domain;
-
                 let domUrl = document.createElement("input");
                 domUrl.value = randDomain;
                 domUrl.id = "creatDom";
@@ -167,11 +161,11 @@
                 let data = {"token": token};
                 axios.post("/api/verifyToken", data)
                     .then(res => {
-                        if (res.data.HTTPStatusCode == "200") {
+                        if (res.data.code === 200) {
                             this.Token = token
                             localStorage.setItem("token", token);
-                            this.domain = res.data.Msg;
-                            localStorage.setItem("domain", res.data.Msg);
+                            this.domain = res.data.data.subdomain;
+                            localStorage.setItem("domain", this.domain);
                         } else {
                             alert("token错误")
                             location.reload()
