@@ -1,6 +1,5 @@
 package config
 
-import "C"
 import "strings"
 
 var Config = &config{}
@@ -17,15 +16,6 @@ type config struct {
 	} `yaml:"Dns"`
 }
 
-//	func VerifyToken(token string) bool {
-//		flag := false
-//		for v := range config.Config.HTTP.User {
-//			if v == token {
-//				flag = true
-//			}
-//		}
-//		return flag
-//	}
 func (c *config) GetUserByDomain(domain string) string {
 	for i, v := range c.HTTP.User {
 		if strings.Contains(domain, v) {

@@ -21,7 +21,7 @@ func NoRoute(c *gin.Context) {
 	for k, v := range config.Config.HTTP.User {
 		if strings.HasPrefix(c.Request.URL.Path, "/"+v+"/") {
 			model.UserDnsDataMap.Set(k, model.DnsInfo{
-				Type:      "DNS",
+				Type:      "HTTP",
 				Subdomain: c.Request.URL.Path,
 				Ipaddress: c.ClientIP(),
 				Time:      time.Now().Unix(),
