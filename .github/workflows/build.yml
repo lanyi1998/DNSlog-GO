@@ -2,10 +2,8 @@ name: Build and Release
 
 on:
   push:
-    branches:
-      - 'master'
     tags:
-      - '*'
+      - 'v*.*.*'  # 只在推送版本标签时触发
 
 jobs:
   build:
@@ -28,16 +26,13 @@ jobs:
           echo "tag=${GITHUB_REF_NAME}" >> $GITHUB_ENV
           ./build.sh
 
-      # debug
-      - run: echo tag is ${{ env.tag }}
-
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1.0.0
         with:
           draft: false
           prerelease: false
-          release_name: ${{ env.tag }}
+          release_name: "Release ${{ env.tag }}"
           tag_name: ${{ env.tag }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
