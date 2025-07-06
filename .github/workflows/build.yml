@@ -25,7 +25,8 @@ jobs:
       - name: Build
         run: |
           chmod u+x build.sh
-          echo "tag=${GITHUB_REF_NAME}" >> $GITHUB_ENV
+          TAG=$(git describe --tags --abbrev=0 2>/dev/null || git rev-parse --short HEAD)
+          echo "tag=$TAG" >> $GITHUB_ENV
           ./build.sh
 
       - name: Create Release
