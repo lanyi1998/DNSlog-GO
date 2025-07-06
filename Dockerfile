@@ -1,7 +1,7 @@
 FROM golang:alpine AS builder
 WORKDIR /DNSlog-GO
 COPY . /DNSlog-GO
-RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags="-w -s" cmd/server/main.go -o main
+RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags="-w -s" -o main cmd/server/main.go
 
 FROM alpine AS runner
 WORKDIR /DNSlog-GO
