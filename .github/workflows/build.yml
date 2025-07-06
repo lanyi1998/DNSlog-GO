@@ -13,12 +13,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4  # 升级到 v4
         with:
           fetch-depth: 0
 
       - name: Setup Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v5  # 升级到 v5
         with:
           go-version: '1.24.4'
 
@@ -30,41 +30,15 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1.0.0
+        uses: softprops/action-gh-release@v1  # 使用现代化的 release action
         with:
           draft: false
           prerelease: false
-          release_name: "Release ${{ env.tag }}"
+          name: "Release ${{ env.tag }}"
           tag_name: ${{ env.tag }}
+          files: |
+            ./build/dnslog-macos.zip
+            ./build/dnslog-linux.zip
+            ./build/dnslog-windows.zip
         env:
-          GITHUB_TOKEN: ${{ github.token }}
-
-      - name: Upload macOS Binary
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/dnslog-macos.zip
-          asset_name: dnslog-macos.zip
-          asset_content_type: application/octet-stream
-
-      - name: Upload Linux Binary
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/dnslog-linux.zip
-          asset_name: dnslog-linux.zip
-          asset_content_type: application/octet-stream
-
-      - name: Upload Windows Binary
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/dnslog-windows.zip
-          asset_name: dnslog-windows.zip
-          asset_content_type: application/octet-stream
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
