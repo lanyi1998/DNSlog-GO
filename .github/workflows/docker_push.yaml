@@ -5,7 +5,7 @@ on:
     branches:
       - 'master'
     tags:
-      - '*'
+      - 'v*.*.*'  # 只在推送版本标签时触发
 
 jobs:
 
