@@ -8,6 +8,9 @@ import (
 
 func Query(c *gin.Context) {
 	ip := c.Param("ip")
+	if ip == "" {
+		ip = c.ClientIP()
+	}
 	// 调用查询逻辑
 	result, err := ipwry.Query(ip)
 	if err != nil {
