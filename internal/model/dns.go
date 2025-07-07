@@ -3,10 +3,11 @@ package model
 import "sync"
 
 type DnsInfo struct {
-	Type      string
-	Subdomain string
-	Ipaddress string
-	Time      int64
+	Type       string
+	Subdomain  string
+	Ipaddress  string
+	IpLocation string
+	Time       int64
 }
 
 var UserDnsDataMap = &userDnsDataMap{}

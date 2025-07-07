@@ -24,22 +24,25 @@
     </template>
     <br>
     <center>
-        <table id="myRecords" width=40% border="0" cellpadding="5" cellspacing="1" bgcolor="#EFF3FF"
+        <table id="myRecords" width=50% border="0" cellpadding="5" cellspacing="1" bgcolor="#EFF3FF"
                style="word-break:break-all; word-wrap:break-all;">
             <tr bgcolor="#ADD3EF">
-                <th>DNS Query Record</th>
-                <th>Type</th>
-                <th>IP Address</th>
-                <th>Created Time</th>
+                <th align="center">DNS Query Record</th>
+                <th align="center">Type</th>
+                <th align="center">IP Address</th>
+                <th align="center">IP Location</th>
+                <th align="center">Created Time</th>
             </tr>
             <td v-if="DnsData == ''" colspan="3" align="center">No Data</td>
             <tr v-for="item in DnsData">
-                <td>{{ item.Subdomain }}</td>
-                <td style="width: 80px">{{ item.Type }}</td>
-                <td style="width: 150px">{{ item.Ipaddress }}</td>
-                <td style="width: 150px">{{ item.Time }}</td>
+                <td align="center">{{ item.Subdomain }}</td>
+                <td align="center">{{ item.Type }}</td>
+                <td align="center">{{ item.Ipaddress }}</td>
+                <td align="center">{{ item.IpLocation }}</td>
+                <td align="center">{{ item.Time }}</td>
             </tr>
         </table>
+
     </center>
 </div>
 </body>

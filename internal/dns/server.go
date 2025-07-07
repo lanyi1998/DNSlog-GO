@@ -2,6 +2,7 @@ package dns
 
 import (
 	"DnsLog/internal/config"
+	"DnsLog/internal/ipwry"
 	"DnsLog/internal/logger"
 	"DnsLog/internal/model"
 	"errors"
@@ -59,11 +60,13 @@ func serverDNS(addr *net.UDPAddr, conn *net.UDPConn, msg dnsmessage.Message) {
 	//过滤非绑定域名请求
 	if strings.Contains(queryNameStr, config.Config.Dns.Domain) {
 		user := config.Config.GetUserByDomain(queryDomain[len(queryDomain)-1])
+		IpLocation, _ := ipwry.Query(addr.IP.String())
 		model.UserDnsDataMap.Set(user, model.DnsInfo{
-			Type:      "DNS",
-			Subdomain: queryNameStr[:len(queryNameStr)-1],
-			Ipaddress: addr.IP.String(),
-			Time:      time.Now().Unix(),
+			Type:       "DNS",
+			Subdomain:  queryNameStr[:len(queryNameStr)-1],
+			Ipaddress:  addr.IP.String(),
+			Time:       time.Now().Unix(),
+			IpLocation: IpLocation,
 		})
 	}
 
