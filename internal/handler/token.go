@@ -27,7 +27,7 @@ func VerifyToken(c *gin.Context) {
 		})
 		return
 	}
-	_, ok := config.Config.HTTP.User[req.Token]
+	_, ok := config.Config.User[req.Token]
 	if !ok {
 		c.JSON(http.StatusOK, Response{
 			Code: http.StatusUnauthorized,
@@ -39,7 +39,7 @@ func VerifyToken(c *gin.Context) {
 		Code: http.StatusOK,
 		Msg:  SUCCESS,
 		Data: gin.H{
-			"subdomain": config.Config.HTTP.User[req.Token] + "." + config.Config.DNS.Domain,
+			"subdomain": config.Config.User[req.Token] + "." + config.Config.Dns.Domain,
 			"token":     req.Token,
 		},
 	})

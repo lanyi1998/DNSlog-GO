@@ -18,7 +18,7 @@ type Response struct {
 var SUCCESS = "success"
 
 func NoRoute(c *gin.Context) {
-	for k, v := range config.Config.HTTP.User {
+	for k, v := range config.Config.User {
 		if strings.HasPrefix(c.Request.URL.Path, "/"+v+"/") {
 			model.UserDnsDataMap.Set(k, model.DnsInfo{
 				Type:      "HTTP",

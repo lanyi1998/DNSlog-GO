@@ -9,6 +9,7 @@ import (
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v2"
 	"os"
+	"strconv"
 )
 
 func readConfig() {
@@ -25,13 +26,13 @@ func readConfig() {
 func main() {
 	logger.InitLogger()
 	defer logger.Sync()
-
 	readConfig()
+
 	go dns.ListingDnsServer()
 	gin.SetMode(gin.ReleaseMode)
 	r := router.SetupRouter()
 	logger.Logger.Info("Http Server start...")
-	err := r.Run("0.0.0.0:" + config.Config.HTTP.Port)
+	err := r.Run("0.0.0.0:" + strconv.Itoa(config.Config.Http.Port))
 	if err != nil {
 		logger.Logger.Panic("Failed to start server", zap.Error(err))
 	}

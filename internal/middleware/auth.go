@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"DnsLog/internal/config"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -8,10 +9,11 @@ import (
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.GetHeader("token")
-		if token == "" {
+		_, ok := config.Config.User[token]
+		if token == "" || !ok {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"HTTPStatusCode": "401",
-				"Msg":            "token is empty",
+				"Msg":            "Invalid token",
 			})
 			c.Abort()
 			return

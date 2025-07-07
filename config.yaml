@@ -1,10 +1,13 @@
-HTTP:
+Http:
   host: 0.0.0.0
   port: 8000
-  #{"token":"用户对应子域名"}
-  user: {
-    "admin": "dnslog"
-  }
   consoleDisable: false
+
+User:
+  #"token":"用户对应子域名"
+  'admin': 'dnslog'
+
 Dns:
   domain: demo.com
+  ARecord:
+    'www': '1.1.1.1'

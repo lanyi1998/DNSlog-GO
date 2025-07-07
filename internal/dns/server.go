@@ -4,6 +4,7 @@ import (
 	"DnsLog/internal/config"
 	"DnsLog/internal/logger"
 	"DnsLog/internal/model"
+	"errors"
 	"fmt"
 	"go.uber.org/zap"
 	"golang.org/x/net/dns/dnsmessage"
@@ -24,6 +25,12 @@ func ListingDnsServer() {
 	}
 	defer conn.Close()
 	logger.Logger.Info("DNS Listing start success...")
+	for k, v := range config.Config.Dns.ARecord {
+		err := SetARecord("", k, v)
+		if err != nil {
+			logger.Logger.Error("DNS SetARecord error", zap.Error(err))
+		}
+	}
 	for {
 		buf := make([]byte, 512)
 		_, addr, _ := conn.ReadFromUDP(buf)
@@ -46,11 +53,11 @@ func serverDNS(addr *net.UDPAddr, conn *net.UDPConn, msg dnsmessage.Message) {
 		queryType    = question.Type
 		queryName, _ = dnsmessage.NewName(queryNameStr)
 		resource     dnsmessage.Resource
-		queryDomain  = strings.Split(strings.Replace(queryNameStr, fmt.Sprintf(".%s.", config.Config.DNS.Domain), "", 1), ".")
+		queryDomain  = strings.Split(strings.Replace(queryNameStr, fmt.Sprintf(".%s.", config.Config.Dns.Domain), "", 1), ".")
 	)
 
 	//过滤非绑定域名请求
-	if strings.Contains(queryNameStr, config.Config.DNS.Domain) {
+	if strings.Contains(queryNameStr, config.Config.Dns.Domain) {
 		user := config.Config.GetUserByDomain(queryDomain[len(queryDomain)-1])
 		model.UserDnsDataMap.Set(user, model.DnsInfo{
 			Type:      "DNS",
@@ -139,4 +146,37 @@ func NewAResource(query dnsmessage.Name, a [4]byte) dnsmessage.Resource {
 			A: a,
 		},
 	}
+}
+
+// SetARecord 设置A记录
+func SetARecord(token, domain, ipAddress string) error {
+	ip := net.ParseIP(ipAddress)
+	if ip == nil {
+		return errors.New("invalid IP address")
+	}
+	ipv4 := ip.To4()
+	if ipv4 == nil {
+		return errors.New("invalid IPv4 address")
+	}
+	var result [4]byte
+	copy(result[:], ipv4)
+	var suffix string
+	if token == "" {
+		suffix = fmt.Sprintf("%s.%s.", domain, config.Config.Dns.Domain)
+	} else {
+		suffix = fmt.Sprintf("%s.%s.%s.", domain, config.Config.User[token], config.Config.Dns.Domain)
+	}
+	DnsARecordMap.Store(suffix, result)
+	return nil
+}
+
+// SetTXTRecord 设置TXT记录
+func SetTXTRecord(token, domain, txt string) {
+	var suffix string
+	if token == "" {
+		suffix = fmt.Sprintf("%s.%s.", domain, config.Config.Dns.Domain)
+	} else {
+		suffix = fmt.Sprintf("%s.%s.%s.", domain, config.Config.User[token], config.Config.Dns.Domain)
+	}
+	DnsTXTRecordMap.Store(suffix, txt)
 }

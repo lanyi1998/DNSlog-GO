@@ -1,6 +1,14 @@
 简介
 ---
-DNSLog-GO 是一款golang编写的监控 DNS 解析记录的工具，自带多用户WEB界面
+
+DNSLog-GO 是一款golang编写的监控 DNS 解析记录的工具。
+
+支持:
+
+- docker一行命令部署
+- WEB界面 或者 API 模式
+- 多账号，可供多人使用。或者工具扫描和人工测试，数据互不干扰
+- 支持通过置DNA A记录，用于临时测试或者ns服务自解析
 
 演示截图:
 
@@ -19,9 +27,7 @@ DNSLog-GO 是一款golang编写的监控 DNS 解析记录的工具，自带多�
 ```shell
 wget https://raw.githubusercontent.com/lanyi1998/DNSlog-GO/master/config.yaml
 #修改你的config.yaml文件
-docker run -d -p 53:53 -p 53:53/udp -p 8000:8000 -v `pwd`/config.yaml:/DNSlog-GO/config.yaml --name dnslog --privileged lanyi1998/dnslog-go:latest
-#设置开机启动
-docker update --restart=always dnslog
+docker run -d -p 53:53 -p 53:53/udp -p 8000:8000 -v `pwd`/config.yaml:/DNSlog-GO/config.yaml --name dnslog --privileged --restart=always lanyi1998/dnslog-go:latest
 ```
 
 # 2.域名与公网 IP 准备
@@ -46,13 +52,19 @@ ns1.1.1.1.1.nip.io
 # 3.修改配置文件 config.ini
 
 ```
-HTTP:
-  port: 8000 //http web监听端口
-  #{"token":"用户对应子域名"}
-  user: { "admin": "admin" } //用户admin 对应的dnslog子域名是 admin.demo.com
-  consoleDisable: false  //是否关闭web页面
+Http:
+  host: 0.0.0.0
+  port: 8000
+  consoleDisable: false
+
+User:
+  #"token":"用户对应子域名"
+  'admin': 'dnslog'
+
 Dns:
-  domain: demo.com //dnslog域名
+  domain: demo.com
+  ARecord:
+    'www': '1.1.1.1'
 ```
 
 # 4.启动对应系统的客户端

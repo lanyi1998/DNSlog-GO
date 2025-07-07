@@ -20,7 +20,7 @@ var jsFS embed.FS
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
 
-	if !config.Config.HTTP.ConsoleDisable {
+	if !config.Config.Http.ConsoleDisable {
 		tmpl := template.Must(template.New("").Delims("[[", "]]").ParseFS(tmplFS, "resources/template/*.html"))
 		r.SetHTMLTemplate(tmpl)
 		// 修改静态文件服务配置，使用子文件系统
@@ -32,16 +32,23 @@ func SetupRouter() *gin.Engine {
 	}
 
 	api := r.Group("/api")
+
+	// 公开接口
 	api.Any("/verifyToken", handler.VerifyToken)
-	api.Any("/getDnsData", middleware.AuthMiddleware(), handler.GetDnsData)
-	api.Any("/clean", middleware.AuthMiddleware(), handler.Clean)
-	api.Any("/getDnsData_clear", middleware.AuthMiddleware(), handler.GetDnsDataAndClean)
-	api.Any("/verifyDns", middleware.AuthMiddleware(), handler.VerifyDns)
-	api.Any("/bulkVerifyDns", middleware.AuthMiddleware(), handler.BulkVerifyDns)
-	api.Any("/verifyHttp", middleware.AuthMiddleware(), handler.VerifyHttp)
-	api.Any("/bulkVerifyHttp", middleware.AuthMiddleware(), handler.BulkVerifyHttp)
-	api.Any("/setARecord", middleware.AuthMiddleware(), handler.SetARecord)
-	api.Any("/setTXTRecord", middleware.AuthMiddleware(), handler.SetTXTRecord)
+
+	// 需要鉴权的接口
+	authApi := api.Group("/", middleware.AuthMiddleware())
+	{
+		authApi.Any("/getDnsData", handler.GetDnsData)
+		authApi.Any("/clean", handler.Clean)
+		authApi.Any("/getDnsData_clear", handler.GetDnsDataAndClean)
+		authApi.Any("/verifyDns", handler.VerifyDns)
+		authApi.Any("/bulkVerifyDns", handler.BulkVerifyDns)
+		authApi.Any("/verifyHttp", handler.VerifyHttp)
+		authApi.Any("/bulkVerifyHttp", handler.BulkVerifyHttp)
+		authApi.Any("/setARecord", handler.SetARecord)
+		authApi.Any("/setTXTRecord", handler.SetTXTRecord)
+	}
 
 	r.NoRoute(handler.NoRoute)
 	return r

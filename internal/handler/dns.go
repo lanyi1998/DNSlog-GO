@@ -1,12 +1,9 @@
 package handler
 
 import (
-	"DnsLog/internal/config"
 	"DnsLog/internal/dns"
 	"DnsLog/internal/model"
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"net"
 	"net/http"
 )
 
@@ -114,29 +111,17 @@ func SetARecord(c *gin.Context) {
 			Msg:  "Invalid request body",
 		})
 	}
-	ip := net.ParseIP(req.Ip)
-	if ip == nil {
+	if err := dns.SetARecord(c.GetString("token"), req.Domain, req.Ip); err != nil {
 		c.JSON(http.StatusOK, Response{
-			Code: http.StatusBadRequest,
-			Msg:  "Invalid IP address",
+			Code: http.StatusInternalServerError,
+			Msg:  err.Error(),
 		})
-		return
-	}
-	ipv4 := ip.To4()
-	if ipv4 == nil {
+	} else {
 		c.JSON(http.StatusOK, Response{
-			Code: http.StatusBadRequest,
-			Msg:  "Invalid IPv4 address",
+			Code: http.StatusOK,
+			Msg:  SUCCESS,
 		})
 	}
-	var result [4]byte
-	copy(result[:], ipv4)
-	suffix := fmt.Sprintf("%s.%s.%s.", req.Domain, config.Config.HTTP.User[c.GetString("token")], config.Config.DNS.Domain)
-	dns.DnsARecordMap.Store(suffix, result)
-	c.JSON(http.StatusOK, Response{
-		Code: http.StatusOK,
-		Msg:  SUCCESS,
-	})
 }
 
 type SetTXTRecordReq struct {
@@ -160,8 +145,7 @@ func SetTXTRecord(c *gin.Context) {
 		})
 		return
 	}
-	suffix := fmt.Sprintf("%s.%s.%s.", req.Domain, config.Config.HTTP.User[c.GetString("token")], config.Config.DNS.Domain)
-	dns.DnsTXTRecordMap.Store(suffix, req.Txt)
+	dns.SetTXTRecord(c.GetString("token"), req.Domain, req.Txt)
 	c.JSON(http.StatusOK, Response{
 		Code: http.StatusOK,
 		Msg:  SUCCESS,
