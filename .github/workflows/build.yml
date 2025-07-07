@@ -2,10 +2,8 @@ name: Build and Release
 
 on:
   push:
-    branches:
-      - 'master'
     tags:
-      - 'v*.*.*'  # 只在推送版本标签时触发
+      - 'v*.*.*'
 
 jobs:
   build:
@@ -13,25 +11,25 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4  # 升级到 v4
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Setup Go
-        uses: actions/setup-go@v5  # 升级到 v5
+        uses: actions/setup-go@v5
         with:
           go-version: '1.24.4'
 
       - name: Build
         run: |
           chmod u+x build.sh
-          TAG=$(git describe --tags --abbrev=0 2>/dev/null || git rev-parse --short HEAD)
+          TAG=$(git describe --tags --abbrev=0)
           echo "tag=$TAG" >> $GITHUB_ENV
           ./build.sh
 
       - name: Create Release
         id: create_release
-        uses: softprops/action-gh-release@v1  # 使用现代化的 release action
+        uses: softprops/action-gh-release@v1
         with:
           draft: false
           prerelease: false

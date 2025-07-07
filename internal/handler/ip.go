@@ -22,8 +22,11 @@ func Query(c *gin.Context) {
 		return
 	}
 	c.JSON(200, gin.H{
-		"code":    http.StatusBadRequest,
+		"code":    http.StatusOK,
 		"success": true,
-		"data":    result,
+		"data": gin.H{
+			"ip":       ip,
+			"location": result,
+		},
 	})
 }
