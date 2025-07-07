@@ -12,7 +12,7 @@ DNSLog-GO 是一款golang编写的监控 DNS 解析记录的工具。
 
 演示截图:
 
-![avatar](https://github.com/lanyi1998/DNSlog-GO/raw/master/images/demo.png)
+![avatar](images/demo.png)
 
 安装
 ---
