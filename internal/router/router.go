@@ -36,6 +36,10 @@ func SetupRouter() *gin.Engine {
 	// 公开接口
 	api.Any("/verifyToken", handler.VerifyToken)
 
+	// IP查询接口
+	api.POST("/ip/query", handler.Query)
+	api.GET("/ip/:ip", handler.Query)
+
 	// 需要鉴权的接口
 	authApi := api.Group("/", middleware.AuthMiddleware())
 	{
