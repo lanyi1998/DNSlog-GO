@@ -38,6 +38,7 @@ func SetupRouter() *gin.Engine {
 
 	// IP查询接口
 	api.POST("/ip/query", handler.Query)
+	api.GET("/ip", handler.Query)
 	api.GET("/ip/:ip", handler.Query)
 
 	// 需要鉴权的接口
