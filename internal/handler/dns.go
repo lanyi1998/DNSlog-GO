@@ -17,8 +17,6 @@ func GetDnsData(c *gin.Context) {
 }
 
 func GetDnsDataAndClean(c *gin.Context) {
-	model.UserDnsDataMap.Mu.Lock()
-	defer model.UserDnsDataMap.Mu.Unlock()
 	c.JSON(http.StatusOK, Response{
 		Code: http.StatusOK,
 		Msg:  SUCCESS,
