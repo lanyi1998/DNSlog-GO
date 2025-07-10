@@ -90,13 +90,11 @@ class DnsLog():
         self.Webserver = Webserver  # dnslog的http监听地址，格式为 ip:端口
         self.token = token  # token
         # 检测DNSLog服务器是否正常
-        try:
-            res = requests.post("http://" + Webserver + "/api/verifyToken", json={"token": token}).json()
-            self.domain = res.Msg
-        except:
-            exit("DnsLog 服务器连接失败")
-        if res["Msg"] == "false":
-            exit("DnsLog token 验证失败")
+        res = requests.post("http://" + Webserver + "/api/verifyToken", json={"token": token}).json()
+        if res['code'] == 401:
+            exit(res['msg'])
+        self.domain = res['data']['subdomain']
+
 
     # 生成随机子域名
     def randomSubDomain(self, length=5):
@@ -107,15 +105,15 @@ class DnsLog():
     def checkDomain(self, domain):
         res = requests.post("http://" + self.Webserver + "/api/verifyDns", json={"Query": domain},
                             headers={"token": self.token}).json()
-        if res["Msg"] == "false":
-            return False
-        else:
+        if res["msg"] == 'success':
             return True
+        else:
+            return False
 
 
-url = "http://192.168.41.2:8090/"
+url = "https://www.baidu.com/"
 
-dns = DnsLog("1111:8888", "admin")
+dns = DnsLog("1.1.1.1:8000", "admin")
 
 subDomain = dns.randomSubDomain()
 
