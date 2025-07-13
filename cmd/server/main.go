@@ -3,13 +3,13 @@ package main
 import (
 	"DnsLog/internal/config"
 	"DnsLog/internal/dns"
+	"DnsLog/internal/handler"
 	"DnsLog/internal/logger"
 	"DnsLog/internal/router"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v2"
 	"os"
-	"strconv"
 )
 
 func readConfig() {
@@ -32,7 +32,7 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 	r := router.SetupRouter()
 	logger.Logger.Info("Http Server start...")
-	err := r.Run("0.0.0.0:" + strconv.Itoa(config.Config.Http.Port))
+	err := handler.MultiProtocolListener(r, config.Config.Http.Port)
 	if err != nil {
 		logger.Logger.Panic("Failed to start server", zap.Error(err))
 	}

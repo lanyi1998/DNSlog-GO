@@ -18,7 +18,7 @@ var tmplFS embed.FS
 var jsFS embed.FS
 
 func SetupRouter() *gin.Engine {
-	r := gin.Default()
+	r := gin.New()
 
 	if !config.Config.Http.ConsoleDisable {
 		tmpl := template.Must(template.New("").Delims("[[", "]]").ParseFS(tmplFS, "resources/template/*.html"))
