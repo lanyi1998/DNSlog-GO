@@ -1,13 +1,14 @@
 package handler
 
 import (
-	"DnsLog/internal/logger"
+	"DnsLog/internal/config"
+	"DnsLog/internal/ipwry"
+	"DnsLog/internal/model"
 	"DnsLog/pkg/httpHandle"
 	"DnsLog/pkg/ldap"
 	"bufio"
 	"bytes"
 	"fmt"
-	"go.uber.org/zap"
 	"io"
 	"net"
 	"net/http"
@@ -87,27 +88,36 @@ func handleConnection(conn net.Conn, ginHandler http.Handler) {
 		return
 	}
 
-	// 判断协议类型
 	if isHTTP(data) {
-		// 重置读取超时
 		conn.SetReadDeadline(time.Time{})
 		httpClient := httpHandle.Client{}
 		httpClient.HandleHTTP(conn, reader, ginHandler)
 		return
 	}
 	if isJRMI(data) {
-		//conn.SetReadDeadline(time.Time{})
 		//rmiClient := rmi.Client{}
 		//rmiClient.handleJRMI(conn, reader)
 	}
 	if isLDAP(data) {
-		conn.SetReadDeadline(time.Time{})
 		ldapClient := ldap.Client{}
-		msg, err := ldapClient.HandleLDAP(conn, reader)
-		if err != nil {
-			logger.Logger.Error("LDAP处理错误: %v", zap.Error(err))
+		searchReq, _ := ldapClient.HandleLDAP(conn, reader)
+		if searchReq != nil {
+			username := searchReq.BaseObject
+			for k, v := range config.Config.User {
+				if v == username {
+					ipStr := strings.Split(conn.RemoteAddr().String(), ":")[0]
+					IpLocation, _ := ipwry.Query(ipStr)
+					model.UserDnsDataMap.Set(k, model.DnsInfo{
+						Type:       "LDAP",
+						Subdomain:  username,
+						Ipaddress:  ipStr,
+						Time:       time.Now().Unix(),
+						IpLocation: IpLocation,
+					})
+					break
+				}
+			}
 		}
-		println(msg.BaseObject)
 	}
 	handleOtherProtocol(conn, reader)
 }

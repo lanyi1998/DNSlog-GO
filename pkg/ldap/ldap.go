@@ -48,7 +48,10 @@ func (c *Client) HandleLDAP(conn net.Conn, reader *bufio.Reader) (*SearchRequest
 		}
 
 		if n > 0 {
-			return c.processLDAPMessage(buffer[:n], conn)
+			msg, err := c.processLDAPMessage(buffer[:n], conn)
+			if msg != nil {
+				return msg, err
+			}
 		}
 	}
 	return nil, errors.New("没有LDAP请求数据")
