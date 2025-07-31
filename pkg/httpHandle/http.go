@@ -17,6 +17,10 @@ type BufferedConn struct {
 	reader *bufio.Reader
 }
 
+func (c *BufferedConn) Read(b []byte) (int, error) {
+	return c.reader.Read(b)
+}
+
 func (c *Client) HandleHTTP(conn net.Conn, reader *bufio.Reader, ginHandler http.Handler) {
 	// 创建包装连接
 	bufferedConn := &BufferedConn{
