@@ -152,7 +152,10 @@
                 document.execCommand("Copy"); // 执行浏览器复制命令
                 let creatDom = document.getElementById("creatDom");
                 creatDom.parentNode.removeChild(creatDom);
-                this.payload["SSRF"] = location.protocol + "//" + location.host + "/" + this.domain.split(".")[0] + "/"
+                let subdomain = this.domain.split(".")[0]
+                this.payload["SSRF"] = location.protocol + "//" + location.host + "/" + subdomain  + "/"
+                this.payload["LDAP"] = 'ldap://127.0.0.1:8000/' + subdomain
+                this.payload["RMI"] = 'rmi://127.0.0.1:8000/' + subdomain
                 app.randDomain = randDomain
                 alert("复制成功");
             }
