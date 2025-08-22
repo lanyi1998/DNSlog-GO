@@ -6,6 +6,7 @@ import (
 	"DnsLog/internal/model"
 	"DnsLog/pkg/httpHandle"
 	"DnsLog/pkg/ldap"
+	"DnsLog/pkg/rmi"
 	"bufio"
 	"bytes"
 	"fmt"
@@ -94,10 +95,6 @@ func handleConnection(conn net.Conn, ginHandler http.Handler) {
 		httpClient.HandleHTTP(conn, reader, ginHandler)
 		return
 	}
-	if isJRMI(data) {
-		//rmiClient := rmi.Client{}
-		//rmiClient.handleJRMI(conn, reader)
-	}
 	if isLDAP(data) {
 		ldapClient := ldap.Client{}
 		searchReq, _ := ldapClient.HandleLDAP(conn, reader)
@@ -115,6 +112,25 @@ func handleConnection(conn net.Conn, ginHandler http.Handler) {
 						IpLocation: IpLocation,
 					})
 					break
+				}
+			}
+		}
+	}
+	if isJRMI(data) {
+		rmiClient := rmi.Client{}
+		path := rmiClient.HandleJRMI(conn, reader)
+		if path != "" {
+			for k, v := range config.Config.User {
+				if v == path {
+					ipStr := strings.Split(conn.RemoteAddr().String(), ":")[0]
+					IpLocation, _ := ipwry.Query(ipStr)
+					model.UserDnsDataMap.Set(k, model.DnsInfo{
+						Type:       "RMI",
+						Subdomain:  path,
+						Ipaddress:  ipStr,
+						Time:       time.Now().Unix(),
+						IpLocation: IpLocation,
+					})
 				}
 			}
 		}
