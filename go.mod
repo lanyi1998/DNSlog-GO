@@ -1,4 +1,4 @@
-module DnsLog
+module github.com/lanyi1998/DNSlog-GO
 
 go 1.23.0
 

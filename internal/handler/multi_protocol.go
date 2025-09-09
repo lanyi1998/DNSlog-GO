@@ -1,15 +1,15 @@
 package handler
 
 import (
-	"DnsLog/internal/config"
-	"DnsLog/internal/ipwry"
-	"DnsLog/internal/model"
-	"DnsLog/pkg/httpHandle"
-	"DnsLog/pkg/ldap"
-	"DnsLog/pkg/rmi"
 	"bufio"
 	"bytes"
 	"fmt"
+	"github.com/lanyi1998/DNSlog-GO/internal/config"
+	"github.com/lanyi1998/DNSlog-GO/internal/ipwry"
+	"github.com/lanyi1998/DNSlog-GO/internal/model"
+	"github.com/lanyi1998/DNSlog-GO/pkg/httpHandle"
+	"github.com/lanyi1998/DNSlog-GO/pkg/ldap"
+	"github.com/lanyi1998/DNSlog-GO/pkg/rmi"
 	"io"
 	"net"
 	"net/http"

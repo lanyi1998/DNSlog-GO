@@ -1,11 +1,11 @@
 package router
 
 import (
-	"DnsLog/internal/config"
-	"DnsLog/internal/handler"
-	"DnsLog/internal/middleware"
 	"embed"
 	"github.com/gin-gonic/gin"
+	"github.com/lanyi1998/DNSlog-GO/internal/config"
+	"github.com/lanyi1998/DNSlog-GO/internal/handler"
+	"github.com/lanyi1998/DNSlog-GO/internal/middleware"
 	"html/template"
 	"io/fs"
 	"net/http"

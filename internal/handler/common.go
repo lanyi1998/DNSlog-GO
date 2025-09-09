@@ -1,10 +1,10 @@
 package handler
 
 import (
-	"DnsLog/internal/config"
-	"DnsLog/internal/ipwry"
-	"DnsLog/internal/model"
 	"github.com/gin-gonic/gin"
+	"github.com/lanyi1998/DNSlog-GO/internal/config"
+	"github.com/lanyi1998/DNSlog-GO/internal/ipwry"
+	"github.com/lanyi1998/DNSlog-GO/internal/model"
 	"net/http"
 	"strings"
 	"time"

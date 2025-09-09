@@ -1,12 +1,12 @@
 package main
 
 import (
-	"DnsLog/internal/config"
-	"DnsLog/internal/dns"
-	"DnsLog/internal/handler"
-	"DnsLog/internal/logger"
-	"DnsLog/internal/router"
 	"github.com/gin-gonic/gin"
+	"github.com/lanyi1998/DNSlog-GO/internal/config"
+	"github.com/lanyi1998/DNSlog-GO/internal/dns"
+	"github.com/lanyi1998/DNSlog-GO/internal/handler"
+	"github.com/lanyi1998/DNSlog-GO/internal/logger"
+	"github.com/lanyi1998/DNSlog-GO/internal/router"
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v2"
 	"os"

@@ -1,12 +1,12 @@
 package dns
 
 import (
-	"DnsLog/internal/config"
-	"DnsLog/internal/ipwry"
-	"DnsLog/internal/logger"
-	"DnsLog/internal/model"
 	"errors"
 	"fmt"
+	"github.com/lanyi1998/DNSlog-GO/internal/config"
+	"github.com/lanyi1998/DNSlog-GO/internal/ipwry"
+	"github.com/lanyi1998/DNSlog-GO/internal/logger"
+	"github.com/lanyi1998/DNSlog-GO/internal/model"
 	"go.uber.org/zap"
 	"golang.org/x/net/dns/dnsmessage"
 	"net"

@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"DnsLog/internal/config"
 	"github.com/gin-gonic/gin"
+	"github.com/lanyi1998/DNSlog-GO/internal/config"
 	"net/http"
 )
 

@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"DnsLog/internal/dns"
-	"DnsLog/internal/model"
 	"github.com/gin-gonic/gin"
+	"github.com/lanyi1998/DNSlog-GO/internal/dns"
+	"github.com/lanyi1998/DNSlog-GO/internal/model"
 	"net/http"
 )
 
