@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/go-resty/resty/v2"
 	"math/rand"
+	"strings"
 	"time"
 )
 
@@ -11,6 +12,7 @@ type DnsLogClient struct {
 	baseUrl   string
 	token     string
 	Subdomain string
+	PreFix    string
 }
 
 var httpClient = resty.New()
@@ -47,18 +49,48 @@ func NewDnsLogClient(baseUrl, token string) (*DnsLogClient, error) {
 		return nil, errors.New(respBody.Msg)
 	}
 	dnsClient.Subdomain = respBody.Data.Subdomain
+	dnsClient.PreFix = strings.Split(dnsClient.Subdomain, ".")[0]
 	return &dnsClient, nil
 }
 
 // RandomSubDomain 随机生成子域名
 func (dnslogClient *DnsLogClient) RandomSubDomain(length int) string {
+	return randStr(length) + "." + dnslogClient.Subdomain
+}
+
+func randStr(length int) string {
 	rand.New(rand.NewSource(time.Now().UnixNano()))
 	chars := "abcdefghijklmnopqrstuvwxyz0123456789"
 	result := make([]byte, length)
 	for i := 0; i < length; i++ {
 		result[i] = chars[rand.Intn(len(chars))]
 	}
-	return string(result) + "." + dnslogClient.Subdomain
+	return string(result)
+}
+
+// RandomSSRFUrl 随机生成SSRF URL
+func (dnslogClient *DnsLogClient) RandomSSRFUrl(length int) string {
+	return dnslogClient.baseUrl + "/" + dnslogClient.PreFix + "/" + randStr(length)
+}
+
+func (dnslogClient *DnsLogClient) VerifyHttp(url string) (bool, error) {
+	key := strings.Replace(url, dnslogClient.baseUrl, "", 1)
+	var respBody VerifyDnsResponse
+	resp, err := httpClient.R().
+		SetHeader("Token", dnslogClient.token).
+		SetBody(VerifyDnsReqeust{Query: key}).
+		SetResult(&respBody).
+		Post("/api/verifyHttp")
+	if err != nil {
+		return false, err
+	}
+	if respBody.Code != 200 || resp.IsError() {
+		return false, errors.New(respBody.Msg)
+	}
+	if respBody.Data.Subdomain != ""{
+		return true, nil
+	}
+	return false, nil
 }
 
 type VerifyDnsReqeust struct {

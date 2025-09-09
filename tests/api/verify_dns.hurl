@@ -1,6 +1,6 @@
 POST http://localhost:8000/api/verifyDns
 {
-    "Query": "not_domain.com"
+    "query": "not_domain.com"
 }
 HTTP 401
 {"code":"401","msg":"Invalid token"}
@@ -8,7 +8,7 @@ HTTP 401
 POST http://localhost:8000/api/verifyDns
 Token: {{TOKEN}}
 {
-    "Query": "not_domain.com"
+    "query": "not_domain.com"
 }
 HTTP 200
 {"code":200,"msg":"Not Found","data":null}
