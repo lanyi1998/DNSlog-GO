@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  dnslog:
+    image: lanyi1998/dnslog-go:latest
+    container_name: dnslog
+    ports:
+      # DNS 查询端口 (TCP)
+      - "53:53"
+      # DNS 查询端口 (UDP)
+      - "53:53/udp"
+      # Web 管理界面端口
+      - "28888:8000"
+    volumes:
+      # 挂载配置文件，冒号前的 ./config.yaml 指的是与 docker-compose.yml 文件同目录下的 config.yaml
+      - ./config.yaml:/DNSlog-GO/config.yaml
+    # 启用特权模式，通常为了绑定低位端口（如53）需要此权限
+    privileged: true
+    # 设置容器的重启策略为总是重启
+    restart: always
