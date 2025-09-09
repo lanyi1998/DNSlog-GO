@@ -17,11 +17,11 @@ var lock sync.Mutex
 
 func Query(ip string) (string, error) {
 	lock.Lock()
+	defer lock.Unlock()
 	i := net.ParseIP(ip)
 	if i == nil || i.To4() == nil {
 		return "", errors.New("invalid IP address")
 	}
-	defer lock.Unlock()
 	result := qqWry.Find(ip)
 	return result.Country + "/" + result.Area, nil
 }
