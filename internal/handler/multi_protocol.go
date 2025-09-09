@@ -47,7 +47,7 @@ func isHTTP(data []byte) bool {
 	dataStr := string(data)
 
 	for _, method := range methods {
-		if strings.HasPrefix(dataStr, method+" ") {
+		if strings.HasPrefix(dataStr, method) {
 			return true
 		}
 	}
