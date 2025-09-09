@@ -12,8 +12,8 @@ func AuthMiddleware() gin.HandlerFunc {
 		_, ok := config.Config.User[token]
 		if token == "" || !ok {
 			c.JSON(http.StatusUnauthorized, gin.H{
-				"HTTPStatusCode": "401",
-				"Msg":            "Invalid token",
+				"code": "401",
+				"msg":  "Invalid token",
 			})
 			c.Abort()
 			return
