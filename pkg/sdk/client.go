@@ -154,7 +154,7 @@ func (dnslogClient *DnsLogClient) BulkVerifyDns(domains []string) ([]string, err
 }
 
 // Clear 清空DNS记录clean
-func (dnslogClient *DnsLogClient) clear() error {
+func (dnslogClient *DnsLogClient) Clear() error {
 	_, err := httpClient.R().
 		SetHeader("Token", dnslogClient.token).
 		Get("/api/clean")
