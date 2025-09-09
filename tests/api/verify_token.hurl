@@ -17,7 +17,7 @@ HTTP 200
 
 GET http://localhost:8000/api/getDnsData
 HTTP 401
-{"HTTPStatusCode":"401","Msg":"Invalid token"}
+{"code":"401","msg":"Invalid token"}
 
 GET http://localhost:8000/api/getDnsData
 Token: {{TOKEN}}
