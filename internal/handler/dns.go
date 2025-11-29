@@ -1,10 +1,11 @@
 package handler
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/lanyi1998/DNSlog-GO/internal/dns"
 	"github.com/lanyi1998/DNSlog-GO/internal/model"
-	"net/http"
 )
 
 // GetDnsData 获取DNS数据
@@ -81,18 +82,22 @@ func BulkVerifyDns(c *gin.Context) {
 		})
 	}
 	data := model.UserDnsDataMap.Get(c.GetString("token"))
-	var verifyData []string
+	var verifyData map[string]struct{}
 	for _, s := range req.Subdomain {
 		for _, v := range data {
 			if s == v.Subdomain {
-				verifyData = append(verifyData, v.Subdomain)
+				verifyData[v.Subdomain] = struct{}{}
 			}
 		}
+	}
+	var dataList []string
+	for key := range verifyData {
+		dataList = append(dataList, key)
 	}
 	c.JSON(http.StatusOK, Response{
 		Code: http.StatusOK,
 		Msg:  SUCCESS,
-		Data: verifyData,
+		Data: dataList,
 	})
 }
 
