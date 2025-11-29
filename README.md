@@ -130,6 +130,38 @@ if dns.checkDomain(subDomain):
     print("存在FastJosn")
 ```
 
+# 5. Golang SDK
+
+```golang
+package main
+
+import (
+	"net/http"
+
+	"github.com/lanyi1998/DNSlog-GO/pkg/sdk"
+)
+
+func main() {
+	client, err := sdk.NewDnsLogClient("http://127.0.0.1:8000", "admin")
+	if err != nil {
+		panic(err)
+	}
+
+	dnslog :=  client.RandomSubDomain(10)
+	client.RandomSSRFUrl(10)
+	http.Get("http://" + dnslog)
+	// 一个http请求一个dns
+	if ok, _ := client.VerifyDns(dnslog); ok {
+		println(">> [DNS] 验证成功", dnslog)
+	}
+	// 一个请求验证多个DNS,高效率,适用于扫描器等大批量发送dns请求的场景
+	if ok, _ := client.VerifyDnsV2(dnslog); ok {
+		println(">> [DNS] 验证成功", dnslog)
+	}
+	client.Clear()
+}
+```
+
 ## Stargazers over time
 
 [![Stargazers over time](https://starchart.cc/lanyi1998/DNSlog-GO.svg)](https://starchart.cc/lanyi1998/DNSlog-GO)

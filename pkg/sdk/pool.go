@@ -2,9 +2,6 @@ package sdk
 
 import (
 	"time"
-
-	"github.com/lanyi1998/DNSlog-GO/internal/logger"
-	"go.uber.org/zap"
 )
 
 type Request struct {
@@ -64,11 +61,9 @@ func (p *KeyPool) processBatch() {
 	if len(batch) == 0 {
 		return
 	}
-	logger.Logger.Debug(">> [Worker] 正在批量处理", zap.Int("count", len(batch)))
 	result, err := p.Client.BulkVerifyDns(keyList)
 	if err != nil {
 		p.CloseChan(batch)
-		logger.Logger.Error("DNS bulk verify error", zap.Error(err))
 		return
 	}
 	if len(result) == 0 {
