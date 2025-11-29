@@ -2,10 +2,11 @@ package sdk
 
 import (
 	"errors"
-	"github.com/go-resty/resty/v2"
 	"math/rand"
 	"strings"
 	"time"
+
+	"github.com/go-resty/resty/v2"
 )
 
 type DnsLogClient struct {
@@ -13,6 +14,7 @@ type DnsLogClient struct {
 	token     string
 	Subdomain string
 	PreFix    string
+	keyPool   *KeyPool
 }
 
 var httpClient = resty.New()
@@ -50,12 +52,14 @@ func NewDnsLogClient(baseUrl, token string) (*DnsLogClient, error) {
 	}
 	dnsClient.Subdomain = respBody.Data.Subdomain
 	dnsClient.PreFix = strings.Split(dnsClient.Subdomain, ".")[0]
+	dnsClient.keyPool = NewKeyPool(1000, 1*time.Second, &dnsClient)
+	go dnsClient.keyPool.Start()
 	return &dnsClient, nil
 }
 
 // RandomSubDomain 随机生成子域名
-func (dnslogClient *DnsLogClient) RandomSubDomain(length int) string {
-	return randStr(length) + "." + dnslogClient.Subdomain
+func (d *DnsLogClient) RandomSubDomain(length int) string {
+	return randStr(length) + "." + d.Subdomain
 }
 
 func randStr(length int) string {
@@ -69,15 +73,15 @@ func randStr(length int) string {
 }
 
 // RandomSSRFUrl 随机生成SSRF URL
-func (dnslogClient *DnsLogClient) RandomSSRFUrl(length int) string {
-	return dnslogClient.baseUrl + "/" + dnslogClient.PreFix + "/" + randStr(length)
+func (d *DnsLogClient) RandomSSRFUrl(length int) string {
+	return d.baseUrl + "/" + d.PreFix + "/" + randStr(length)
 }
 
-func (dnslogClient *DnsLogClient) VerifyHttp(url string) (bool, error) {
-	key := strings.Replace(url, dnslogClient.baseUrl, "", 1)
+func (d *DnsLogClient) VerifyHttp(url string) (bool, error) {
+	key := strings.Replace(url, d.baseUrl, "", 1)
 	var respBody VerifyDnsResponse
 	resp, err := httpClient.R().
-		SetHeader("Token", dnslogClient.token).
+		SetHeader("Token", d.token).
 		SetBody(VerifyDnsReqeust{Query: key}).
 		SetResult(&respBody).
 		Post("/api/verifyHttp")
@@ -87,7 +91,7 @@ func (dnslogClient *DnsLogClient) VerifyHttp(url string) (bool, error) {
 	if respBody.Code != 200 || resp.IsError() {
 		return false, errors.New(respBody.Msg)
 	}
-	if respBody.Data.Subdomain != ""{
+	if respBody.Data.Subdomain != "" {
 		return true, nil
 	}
 	return false, nil
@@ -108,10 +112,10 @@ type VerifyDnsResponse struct {
 }
 
 // VerifyDns 验证DNS是否存在
-func (dnslogClient *DnsLogClient) VerifyDns(domain string) (bool, error) {
+func (d *DnsLogClient) VerifyDns(domain string) (bool, error) {
 	var respBody VerifyDnsResponse
 	resp, err := httpClient.R().
-		SetHeader("Token", dnslogClient.token).
+		SetHeader("Token", d.token).
 		SetBody(VerifyDnsReqeust{Query: domain}).
 		SetResult(&respBody).
 		Post("/api/verifyDns")
@@ -127,6 +131,14 @@ func (dnslogClient *DnsLogClient) VerifyDns(domain string) (bool, error) {
 	return false, nil
 }
 
+func (d *DnsLogClient) VerifyDnsV2(domain string) (bool, error) {
+	if d.keyPool.DoRequest(domain) {
+		return true, nil
+	} else {
+		return false, nil
+	}
+}
+
 type BulkVerifyDnsRequest struct {
 	Subdomain []string `json:"subdomain"`
 }
@@ -137,10 +149,10 @@ type BulkVerifyDnsResponse struct {
 	Data []string `json:"data"`
 }
 
-func (dnslogClient *DnsLogClient) BulkVerifyDns(domains []string) ([]string, error) {
+func (d *DnsLogClient) BulkVerifyDns(domains []string) ([]string, error) {
 	var respBody BulkVerifyDnsResponse
 	resp, err := httpClient.R().
-		SetHeader("Token", dnslogClient.token).
+		SetHeader("Token", d.token).
 		SetBody(BulkVerifyDnsRequest{Subdomain: domains}).
 		SetResult(&respBody).
 		Post("/api/bulkVerifyDns")
@@ -154,9 +166,9 @@ func (dnslogClient *DnsLogClient) BulkVerifyDns(domains []string) ([]string, err
 }
 
 // Clear 清空DNS记录clean
-func (dnslogClient *DnsLogClient) Clear() error {
+func (d *DnsLogClient) Clear() error {
 	_, err := httpClient.R().
-		SetHeader("Token", dnslogClient.token).
+		SetHeader("Token", d.token).
 		Get("/api/clean")
 	return err
 }
