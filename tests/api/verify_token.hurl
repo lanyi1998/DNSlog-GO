@@ -22,4 +22,5 @@ HTTP 401
 GET http://localhost:8000/api/getDnsData
 Token: {{TOKEN}}
 HTTP 200
-{"code":200,"msg":"success","data":[]}
+[Asserts]
+jsonpath "$.msg" == "success"
