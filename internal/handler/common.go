@@ -6,6 +6,7 @@ import (
 	"github.com/lanyi1998/DNSlog-GO/internal/ipwry"
 	"github.com/lanyi1998/DNSlog-GO/internal/model"
 	"net/http"
+	"net/http/httputil"
 	"strings"
 	"time"
 )
@@ -21,6 +22,11 @@ var SUCCESS = "success"
 func NoRoute(c *gin.Context) {
 	for k, v := range config.Config.User {
 		if strings.HasPrefix(c.Request.URL.Path, "/"+v+"/") {
+			dump, err := httputil.DumpRequest(c.Request, false)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
+				return
+			}
 			IpLocation, _ := ipwry.Query(c.ClientIP())
 			model.UserDnsDataMap.Set(k, model.DnsInfo{
 				Type:       "HTTP",
@@ -28,6 +34,7 @@ func NoRoute(c *gin.Context) {
 				Ipaddress:  c.ClientIP(),
 				Time:       time.Now().Unix(),
 				IpLocation: IpLocation,
+				Request:    string(dump),
 			})
 			break
 		}

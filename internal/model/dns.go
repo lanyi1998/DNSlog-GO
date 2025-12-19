@@ -8,6 +8,7 @@ type DnsInfo struct {
 	Ipaddress  string
 	IpLocation string
 	Time       int64
+	Request    string
 }
 
 var UserDnsDataMap = &userDnsDataMap{}
