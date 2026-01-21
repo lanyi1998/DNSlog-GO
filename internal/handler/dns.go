@@ -15,15 +15,17 @@ func GetDnsData(c *gin.Context) {
 		Msg:  SUCCESS,
 		Data: model.UserDnsDataMap.Get(c.GetString("token")),
 	})
+	return
 }
 
 func GetDnsDataAndClean(c *gin.Context) {
+	model.UserDnsDataMap.Clear(c.GetString("token"))
 	c.JSON(http.StatusOK, Response{
 		Code: http.StatusOK,
 		Msg:  SUCCESS,
 		Data: model.UserDnsDataMap.Get(c.GetString("token")),
 	})
-	model.UserDnsDataMap.Clear(c.GetString("token"))
+	return
 }
 
 func Clean(c *gin.Context) {
@@ -32,6 +34,7 @@ func Clean(c *gin.Context) {
 		Code: http.StatusOK,
 		Msg:  SUCCESS,
 	})
+	return
 }
 
 type VerifyDnsReq struct {
@@ -67,6 +70,7 @@ func VerifyDns(c *gin.Context) {
 		Code: http.StatusOK,
 		Msg:  "Not Found",
 	})
+	return
 }
 
 type BulkVerifyDnsReq struct {
@@ -80,9 +84,11 @@ func BulkVerifyDns(c *gin.Context) {
 			Code: http.StatusBadRequest,
 			Msg:  "Invalid request body",
 		})
+		return
 	}
 	data := model.UserDnsDataMap.Get(c.GetString("token"))
 	var verifyData map[string]struct{}
+	verifyData = make(map[string]struct{})
 	for _, s := range req.Subdomain {
 		for _, v := range data {
 			if s == v.Subdomain {
@@ -99,6 +105,7 @@ func BulkVerifyDns(c *gin.Context) {
 		Msg:  SUCCESS,
 		Data: dataList,
 	})
+	return
 }
 
 type SetARecordReq struct {
@@ -113,18 +120,21 @@ func SetARecord(c *gin.Context) {
 			Code: http.StatusBadRequest,
 			Msg:  "Invalid request body",
 		})
+		return
 	}
 	if err := dns.SetARecord(c.GetString("token"), req.Domain, req.Ip); err != nil {
 		c.JSON(http.StatusOK, Response{
 			Code: http.StatusInternalServerError,
 			Msg:  err.Error(),
 		})
-	} else {
-		c.JSON(http.StatusOK, Response{
-			Code: http.StatusOK,
-			Msg:  SUCCESS,
-		})
+		return
 	}
+
+	c.JSON(http.StatusOK, Response{
+		Code: http.StatusOK,
+		Msg:  SUCCESS,
+	})
+	return
 }
 
 type SetTXTRecordReq struct {
@@ -153,4 +163,5 @@ func SetTXTRecord(c *gin.Context) {
 		Code: http.StatusOK,
 		Msg:  SUCCESS,
 	})
+	return
 }
