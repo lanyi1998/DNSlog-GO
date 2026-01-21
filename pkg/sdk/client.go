@@ -52,7 +52,7 @@ func NewDnsLogClient(baseUrl, token string) (*DnsLogClient, error) {
 	}
 	dnsClient.Subdomain = respBody.Data.Subdomain
 	dnsClient.PreFix = strings.Split(dnsClient.Subdomain, ".")[0]
-	dnsClient.keyPool = NewKeyPool(1000, 1*time.Second, &dnsClient)
+	dnsClient.keyPool = NewKeyPool(9999, 5*time.Second, &dnsClient)
 	go dnsClient.keyPool.Start()
 	return &dnsClient, nil
 }
