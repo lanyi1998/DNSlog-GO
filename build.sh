@@ -1,15 +1,27 @@
 #!/bin/bash
+set -euo pipefail
+
+cd "$(dirname "$0")"
 mkdir -p build
 
-# Build binary for macOS
-env GOOS=darwin GOARCH=amd64 go build -o build/dnslog-macos cmd/server/main.go
-zip -j build/dnslog-macos.zip build/dnslog-macos config.yaml
+build_archive() {
+    local os="$1" target="$2" binary="$3" archive="$4"
+    shift 4
 
+    mkdir -p "$(dirname "$binary")"
+    env CGO_ENABLED=0 GOOS="$os" GOARCH=amd64 go build -o "$binary" "./cmd/$target"
+    rm -f "$archive"
+    zip -j "$archive" "$binary" "$@"
+}
 
-# Build binary for Linux
-env GOOS=linux GOARCH=amd64 go build -o build/dnslog-linux cmd/server/main.go
-zip -j build/dnslog-linux.zip build/dnslog-linux config.yaml
+for platform in macos linux windows; do
+    os="$platform"
+    suffix=""
+    case "$platform" in
+        macos) os=darwin ;;
+        windows) suffix=.exe ;;
+    esac
 
-# Build binary for Windows
-env GOOS=windows GOARCH=amd64 go build -o build/dnslog-windows.exe cmd/server/main.go
-zip -j build/dnslog-windows.zip build/dnslog-windows.exe config.yaml
+    build_archive "$os" server "build/dnslog-$platform$suffix" "build/dnslog-$platform.zip" config.yaml
+    build_archive "$os" dnslog-cli "build/cli-$platform/dnslog-cli$suffix" "build/dnslog-cli-$platform.zip"
+done
