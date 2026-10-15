@@ -130,7 +130,76 @@ if dns.checkDomain(subDomain):
     print("存在FastJosn")
 ```
 
-# 5. Golang SDK
+# 5. CLI
+
+发布版本提供 `dnslog-cli-macos.zip`、`dnslog-cli-linux.zip` 和 `dnslog-cli-windows.zip`（均为 amd64）。解压后得到 `dnslog-cli`（Windows 为 `dnslog-cli.exe`），可将其放入 `PATH` 供 Skill 调用。
+
+构建 CLI：
+
+```bash
+make build-cli
+```
+
+使用 CLI 写入连接配置，无需手动创建配置文件：
+
+```bash
+./build/dnslog-cli config set \
+  --url "http://127.0.0.1:8000" \
+  --token "admin"
+```
+
+token 可能被 shell 历史记录保存。共享机器上建议临时关闭历史记录，或改用环境变量。CLI 默认把配置写入 `~/.config/dnslog-go/config.yaml`，文件权限为 `0600`：
+
+```yaml
+base_url: http://127.0.0.1:8000
+token: admin
+```
+
+也可以通过环境变量提供配置。环境变量的优先级高于配置文件：
+
+```bash
+export DNSLOG_BASE_URL="http://127.0.0.1:8000"
+export DNSLOG_TOKEN="admin"
+```
+
+`DNSLOG_CONFIG` 可以指定其他配置文件路径。常用命令：
+
+```bash
+./build/dnslog-cli verify-token
+./build/dnslog-cli config path
+./build/dnslog-cli get-dns
+./build/dnslog-cli verify-dns abc.dnslog.demo.com
+./build/dnslog-cli verify-http /dnslog/test --timeout 15s --interval 1s
+./build/dnslog-cli random-domain
+./build/dnslog-cli help
+```
+
+`verify-dns` 和 `verify-http` 会先立即查询一次；未找到时默认每 `500ms` 重试，最多等待 `10s`。可以通过 `--timeout` 和 `--interval` 调整，或使用 `--timeout 0` 禁用轮询。
+
+轮询期间成功查询但未命中时返回 `{"found":false}`；请求失败或在请求过程中超时时返回非零退出码，并将错误写入标准错误。
+
+除帮助信息外，CLI 的标准输出均为 JSON，错误写入标准错误，适合 Agent 调用。
+
+# 6. Agent Skill
+
+仓库提供了可配合 CLI 使用的 Agent Skill：[skills/dnslog-go](skills/dnslog-go)。Skill 不保存或接收 token，CLI 会自动从环境变量或用户配置文件读取凭据。
+
+安装 CLI：
+
+```bash
+go install github.com/lanyi1998/DNSlog-GO/cmd/dnslog-cli@latest
+```
+
+将 Skill 安装到 Codex：
+
+```bash
+mkdir -p ~/.codex/skills
+cp -R skills/dnslog-go ~/.codex/skills/dnslog-go
+```
+
+之后可以通过 `$dnslog-go` 显式调用，也可以让 Agent 在处理 DNSlog-GO 任务时自动选择它。
+
+# 7. Golang SDK
 
 ```golang
 package main

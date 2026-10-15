@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"context"
 	"errors"
 	"math/rand"
 	"strings"
@@ -10,14 +11,13 @@ import (
 )
 
 type DnsLogClient struct {
-	baseUrl   string
-	token     string
-	Subdomain string
-	PreFix    string
-	keyPool   *KeyPool
+	baseUrl    string
+	token      string
+	httpClient *resty.Client
+	Subdomain  string
+	PreFix     string
+	keyPool    *KeyPool
 }
-
-var httpClient = resty.New()
 
 type VerifyTokenRequest struct {
 	Token string `json:"token"`
@@ -33,11 +33,13 @@ type VerifyTokenResponse struct {
 }
 
 func NewDnsLogClient(baseUrl, token string) (*DnsLogClient, error) {
-	httpClient.SetTimeout(10 * time.Second)
-	httpClient.SetBaseURL(baseUrl)
+	httpClient := resty.New().
+		SetTimeout(10 * time.Second).
+		SetBaseURL(strings.TrimRight(baseUrl, "/"))
 	dnsClient := DnsLogClient{
-		baseUrl: baseUrl,
-		token:   token,
+		baseUrl:    strings.TrimRight(baseUrl, "/"),
+		token:      token,
+		httpClient: httpClient,
 	}
 	var respBody VerifyTokenResponse
 	resp, err := httpClient.R().
@@ -63,11 +65,11 @@ func (d *DnsLogClient) RandomSubDomain(length int) string {
 }
 
 func randStr(length int) string {
-	rand.New(rand.NewSource(time.Now().UnixNano()))
+	random := rand.New(rand.NewSource(time.Now().UnixNano()))
 	chars := "abcdefghijklmnopqrstuvwxyz0123456789"
 	result := make([]byte, length)
 	for i := 0; i < length; i++ {
-		result[i] = chars[rand.Intn(len(chars))]
+		result[i] = chars[random.Intn(len(chars))]
 	}
 	return string(result)
 }
@@ -78,9 +80,15 @@ func (d *DnsLogClient) RandomSSRFUrl(length int) string {
 }
 
 func (d *DnsLogClient) VerifyHttp(url string) (bool, error) {
+	return d.VerifyHttpContext(context.Background(), url)
+}
+
+// VerifyHttpContext verifies an HTTP interaction and honors context cancellation.
+func (d *DnsLogClient) VerifyHttpContext(ctx context.Context, url string) (bool, error) {
 	key := strings.Replace(url, d.baseUrl, "", 1)
 	var respBody VerifyDnsResponse
-	resp, err := httpClient.R().
+	resp, err := d.httpClient.R().
+		SetContext(ctx).
 		SetHeader("Token", d.token).
 		SetBody(VerifyDnsReqeust{Query: key}).
 		SetResult(&respBody).
@@ -113,8 +121,14 @@ type VerifyDnsResponse struct {
 
 // VerifyDns 验证DNS是否存在
 func (d *DnsLogClient) VerifyDns(domain string) (bool, error) {
+	return d.VerifyDnsContext(context.Background(), domain)
+}
+
+// VerifyDnsContext verifies a DNS interaction and honors context cancellation.
+func (d *DnsLogClient) VerifyDnsContext(ctx context.Context, domain string) (bool, error) {
 	var respBody VerifyDnsResponse
-	resp, err := httpClient.R().
+	resp, err := d.httpClient.R().
+		SetContext(ctx).
 		SetHeader("Token", d.token).
 		SetBody(VerifyDnsReqeust{Query: domain}).
 		SetResult(&respBody).
@@ -151,7 +165,7 @@ type BulkVerifyDnsResponse struct {
 
 func (d *DnsLogClient) BulkVerifyDns(domains []string) ([]string, error) {
 	var respBody BulkVerifyDnsResponse
-	resp, err := httpClient.R().
+	resp, err := d.httpClient.R().
 		SetHeader("Token", d.token).
 		SetBody(BulkVerifyDnsRequest{Subdomain: domains}).
 		SetResult(&respBody).
@@ -167,7 +181,7 @@ func (d *DnsLogClient) BulkVerifyDns(domains []string) ([]string, error) {
 
 // Clear 清空DNS记录clean
 func (d *DnsLogClient) Clear() error {
-	_, err := httpClient.R().
+	_, err := d.httpClient.R().
 		SetHeader("Token", d.token).
 		Get("/api/clean")
 	return err

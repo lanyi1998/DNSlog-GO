@@ -1,0 +1,4 @@
+interface:
+  display_name: "DNSlog-GO"
+  short_description: "Generate callbacks and inspect DNS/HTTP interactions"
+  default_prompt: "Use $dnslog-go to generate a callback domain and inspect its interaction records."
