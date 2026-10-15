@@ -19,11 +19,11 @@ func GetDnsData(c *gin.Context) {
 }
 
 func GetDnsDataAndClean(c *gin.Context) {
-	model.UserDnsDataMap.Clear(c.GetString("token"))
+	data := model.UserDnsDataMap.GetAndClear(c.GetString("token"))
 	c.JSON(http.StatusOK, Response{
 		Code: http.StatusOK,
 		Msg:  SUCCESS,
-		Data: model.UserDnsDataMap.Get(c.GetString("token")),
+		Data: data,
 	})
 	return
 }

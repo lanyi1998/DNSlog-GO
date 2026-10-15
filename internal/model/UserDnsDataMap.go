@@ -37,9 +37,9 @@ func (d *DnsDataMap) Get(token string) []DnsInfo {
 }
 
 func (d *DnsDataMap) Set(token string, data DnsInfo) {
-	value, ok := d.userDnsData.Load(token)
 	d.Mu.Lock()
 	defer d.Mu.Unlock()
+	value, ok := d.userDnsData.Load(token)
 	if ok {
 		d.userDnsData.Store(token, append(value.([]DnsInfo), data))
 	} else {
@@ -49,5 +49,16 @@ func (d *DnsDataMap) Set(token string, data DnsInfo) {
 }
 
 func (d *DnsDataMap) Clear(token string) {
+	d.Mu.Lock()
+	defer d.Mu.Unlock()
 	d.userDnsData.Delete(token)
+}
+
+// GetAndClear atomically removes and returns the token's current records.
+func (d *DnsDataMap) GetAndClear(token string) []DnsInfo {
+	d.Mu.Lock()
+	defer d.Mu.Unlock()
+	data := d.Get(token)
+	d.userDnsData.Delete(token)
+	return data
 }
