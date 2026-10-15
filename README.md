@@ -132,7 +132,7 @@ if dns.checkDomain(subDomain):
 
 # 5. CLI
 
-发布版本提供 `dnslog-cli-macos.zip`、`dnslog-cli-linux.zip` 和 `dnslog-cli-windows.zip`（均为 amd64）。解压后得到 `dnslog-cli`（Windows 为 `dnslog-cli.exe`），可将其放入 `PATH` 供 Skill 调用。
+可以从 [GitHub Releases](https://github.com/lanyi1998/DNSlog-GO/releases) 下载适合当前操作系统的 CLI：`dnslog-cli-macos.zip`、`dnslog-cli-linux.zip` 或 `dnslog-cli-windows.zip`（均为 amd64）。解压后得到 `dnslog-cli`（Windows 为 `dnslog-cli.exe`），将其所在目录加入 `PATH` 后即可使用。
 
 构建 CLI：
 
@@ -189,6 +189,8 @@ export DNSLOG_TOKEN="admin"
 ```bash
 go install github.com/lanyi1998/DNSlog-GO/cmd/dnslog-cli@latest
 ```
+
+也可以从 [GitHub Releases](https://github.com/lanyi1998/DNSlog-GO/releases) 下载对应系统的 `dnslog-cli-*.zip`，无需安装 Go。解压后将 `dnslog-cli`（Windows 为 `dnslog-cli.exe`）所在目录加入 `PATH`，确保 Skill 能通过 `dnslog-cli` 命令调用。可运行 `dnslog-cli help` 检查安装是否成功。
 
 将 Skill 安装到 Codex：
 
