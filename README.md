@@ -1,3 +1,5 @@
+[![lanyi1998/DNSlog-GO repository activity](https://gitstock.org/lanyi1998/DNSlog-GO/badge.webp)](https://gitstock.org/lanyi1998/DNSlog-GO)
+
 简介
 ---
 
