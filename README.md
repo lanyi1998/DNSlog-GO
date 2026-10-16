@@ -1,4 +1,4 @@
-[![lanyi1998/DNSlog-GO repository activity](https://gitstock.org/lanyi1998/DNSlog-GO/badge.webp)](https://gitstock.org/lanyi1998/DNSlog-GO)
+[![lanyi1998/DNSlog-GO repository activity](https://gitstock.org/lanyi1998/DNSlog-GO/badge.webp?v=1)](https://gitstock.org/lanyi1998/DNSlog-GO)
 
 简介
 ---
